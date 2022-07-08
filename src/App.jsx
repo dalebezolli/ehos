@@ -1,124 +1,108 @@
 import { decode } from 'he';
 import { Route, Link } from 'wouter';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 import { searchData, searchPlaylist } from './api';
 
-function App() {
+import { FaSearch } from 'react-icons/fa';
 
-  useEffect(() => console.log('app'));
+function App() {
+  const [ searchResult, setSearchResult ] = useState([]);
+  const [ searchResultLoading, setSearchResultLoading ] = useState(false);
+
+  const handleSearch = async (query) => {
+    setSearchResultLoading(true);
+    const response = await searchData(query);   
+    setSearchResult(response.items);
+    setSearchResultLoading(false);
+  }
 
   return(
     <div>
       <nav className='container mx-auto'>
-        <div className='flex justify-between'>
-          <div className='py-3'>
-            <Link href='/' className='text-blue-400 hover:text-pink-600'>
-              home
+        <div className='flex justify-between py-3'>
+            <Link href='/' className='font-bold hover:text-pink-600'>
+              Music Manager
             </Link>
-          </div>
-          <div className='py-3'>
-            <Link href='/search' className='text-blue-400 hover:text-pink-600'>
-              search song
-            </Link>
-          </div>
-          <div className='py-3'>
-            <Link href='/manager' className='text-blue-400 hover:text-pink-600'>
-              playlist manager
-            </Link>
-          </div>
+            <SearchBar onSearch={ handleSearch } />
+            <UserIcon />
         </div>
-        <hr className='border border-black' />
+        <hr />
       </nav>
 
       <div className='container mx-auto pt-3'>
-        <Route path='/'>
-          <p>Welcome to the best Music Manager that exists!</p>
-        </Route>
-        <Route path='/search'>
-          <SearchRoute />
-        </Route>
-        <Route path='/manager'>
-          <PlaylistManagerRoute />
-        </Route>
+        {
+          searchResultLoading ? (
+            <p>searchResultLoading...</p>
+          ) : (
+            <MusicList contentData={ searchResult } contentOrigin={ "search" } /> 
+          )
+        }
       </div>
     </div>
   );
 }
 
-function SearchRoute() {
-  const [ content, setContent ] = useState([]);
-  const searchQueryInput = useRef();
+function UserIcon() {
+  return (
+    <div className='w-6 h-6 bg-white rounded-full'></div>
+  );
+}
 
-  const search = async (query) => {
-    if(!query) return;   
+function SearchBar({ onSearch }) {
+  const contentSearchInput = useRef();
 
-    const res = await searchData(query);
-    setContent(res.items);
+  const handleKeyUp = (key) => {
+    if(key.keyCode !== 13) return;
+    const input = contentSearchInput.current.value;
+    if(!input) return;
+
+    onSearch(input);
   }
 
-  return(
-    <div>
-      <h2 className='font-bold text-2xl'>Search your favourite music</h2>
+  const handleClick = _ => {
+    const input = contentSearchInput.current.value;
+    if(!input) return;
 
-      <div>
-        <input type="text" 
-          name='search-query' 
-          ref={ searchQueryInput } 
-          className='border border-solid border-b-black inline-block'
-        />
-        <a 
-          className='font-bold ml-5 hover:text-pink-600 hover:cursor-pointer' 
-          onClick={ () => { search(searchQueryInput.current.value); } }
-        >Search</a>
-      </div>
+    onSearch(input);
+  };
 
-      <MusicList content={ content } />
+  return (
+    <div className='h-min'>
+      <input 
+        type='text' 
+        name='content-search' 
+        id='content-search' 
+        placeholder='Search'
+        ref={ contentSearchInput }
+        onKeyUp={ handleKeyUp }
+        className='bg-black text-white w-[400px] border border-black border-b-white'
+      />
+
+      <button 
+        className='px-2 hover:text-pink-600' 
+        onClick={ handleClick }
+      >
+        <FaSearch />
+      </button>
     </div>
   );
 }
 
-function PlaylistManagerRoute() {
-  const [ content, setContent ] = useState([]);
-  const searchQueryInput = useRef();
-
-  const playlistContentSearch = async (playlistId) => {
-    if(!playlistId) return;   
-
-    const res = await searchPlaylist(playlistId);
-    console.log(res);
-    if(res === null) return;
-    setContent(res.items);
-  }
-
+function MusicList({ contentData, contentOrigin }) {
   return(
     <div>
-      <h2 className='font-bold text-2xl'>Playlist Manager</h2>
-
-      <div>
-        <input type="text" 
-          name='search-query' 
-          ref={ searchQueryInput } 
-          className='border border-solid border-b-black inline-block'
-        />
-        <a 
-          className='font-bold ml-5 hover:text-pink-600 hover:cursor-pointer' 
-          onClick={ () => { playlistContentSearch(searchQueryInput.current.value); } }
-        >Search</a>
-      </div>
-
-      <MusicList content={ content } />
-    </div>
-  );
-}
-
-function MusicList({ content }) {
-  return(
-    <div>
-      <h2 className='font-bold text-xl'>Songs</h2>
-      { content.map(item => {
-        return <p key={ item.id.videoId }>{ decode(item.snippet.title) }</p>;
-      }) }
+      <h2 className='font-bold text-xl'>
+        Songs 
+        <span className='font-normal text-base'>
+          &nbsp;- { contentData.length } songs
+        </span>
+      </h2>
+      { 
+        contentData.map(item => {
+          return <p key={ item.id.videoId }>{ decode(item.snippet.title) }</p>;
+        }) 
+      }
     </div>
   );
 }
