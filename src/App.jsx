@@ -1,45 +1,28 @@
 import { decode } from 'he';
-import { Route, Link } from 'wouter';
-import { useState, useRef } from 'react';
-
-import { searchData, searchPlaylist } from './api';
+import { Link } from 'wouter';
+import { useState, useRef, useContext } from 'react';
+import ContentViewerProvider, { ContentViewerContext } from './ContentViewerContext';
 
 import { FaSearch } from 'react-icons/fa';
 
 function App() {
-  const [ searchResult, setSearchResult ] = useState([]);
-  const [ searchResultLoading, setSearchResultLoading ] = useState(false);
-
-  const handleSearch = async (query) => {
-    setSearchResultLoading(true);
-    const response = await searchData(query);   
-    setSearchResult(response.items);
-    setSearchResultLoading(false);
-  }
-
   return(
-    <div>
+    <ContentViewerProvider>
       <nav className='container mx-auto'>
         <div className='flex justify-between py-3'>
             <Link href='/' className='font-bold hover:text-pink-600'>
               Music Manager
             </Link>
-            <SearchBar onSearch={ handleSearch } />
+            <SearchBar />
             <UserIcon />
         </div>
         <hr />
       </nav>
 
       <div className='container mx-auto pt-3'>
-        {
-          searchResultLoading ? (
-            <p>searchResultLoading...</p>
-          ) : (
-            <MusicList contentData={ searchResult } contentOrigin={ "search" } /> 
-          )
-        }
+        <MusicList /> 
       </div>
-    </div>
+    </ContentViewerProvider>
   );
 }
 
@@ -51,20 +34,21 @@ function UserIcon() {
 
 function SearchBar({ onSearch }) {
   const contentSearchInput = useRef();
+  const { searchContent } = useContext(ContentViewerContext);
 
   const handleKeyUp = (key) => {
     if(key.keyCode !== 13) return;
     const input = contentSearchInput.current.value;
     if(!input) return;
 
-    onSearch(input);
+    searchContent(input);
   }
 
   const handleClick = _ => {
     const input = contentSearchInput.current.value;
     if(!input) return;
 
-    onSearch(input);
+    searchContent(input);
   };
 
   return (
@@ -90,16 +74,18 @@ function SearchBar({ onSearch }) {
 }
 
 function MusicList({ contentData, contentOrigin }) {
+  const { selectedList } = useContext(ContentViewerContext);
+
   return(
     <div>
       <h2 className='font-bold text-xl'>
         Songs 
         <span className='font-normal text-base'>
-          &nbsp;- { contentData.length } songs
+          &nbsp;- { selectedList.entries.length } songs
         </span>
       </h2>
       { 
-        contentData.map(item => {
+        selectedList.entries.map(item => {
           return <p key={ item.id.videoId }>{ decode(item.snippet.title) }</p>;
         }) 
       }
