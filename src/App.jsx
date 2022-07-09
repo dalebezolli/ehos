@@ -3,7 +3,8 @@ import { Link } from 'wouter';
 import { useState, useRef, useContext } from 'react';
 import ContentViewerProvider, { ContentViewerContext } from './ContentViewerContext';
 
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaTrash } from 'react-icons/fa';
+import { FiPlus } from 'react-icons/fi';
 
 function App() {
   return(
@@ -84,13 +85,36 @@ function MusicList() {
           &nbsp;- { selectedList.entries.length } songs
         </span>
       </h2>
-      { 
-        selectedList.entries.map(item => {
-          // TODO: Once requests go to server, clean this up
-          const id = (selectedList.entriesType === 'search' ? item.id.videoId : item.snippet.resourceId.videoId); 
-          return <p key={ id }>{ decode(item.snippet.title) }</p>;
-        }) 
-      }
+
+      <div>
+        { 
+          selectedList.entries.map(item => {
+            // TODO: Once requests go to server, clean this up
+            const id = (selectedList.entriesType === 'search' ? item.id.videoId : item.snippet.resourceId.videoId); 
+            return <MusicEntry key={ id } resource={ item } resourceOrigin={ selectedList.entriesType } />
+          }) 
+        }
+      </div>
+    </div>
+  );
+}
+
+function MusicEntry({resource, resourceOrigin}) {
+  const controls = (resourceOrigin === 'search' ? (
+    <FiPlus />
+  ) : (
+    <FaTrash />
+  ) );
+
+  return(
+    <div className='w-full p-1 mb-2 border flex justify-between items-center'>
+      <div>
+        <p>{ decode(resource.snippet.title) }</p>
+      </div>
+
+      <div>
+        { controls }
+      </div>
     </div>
   );
 }
