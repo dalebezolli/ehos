@@ -21,13 +21,19 @@ function ContentViewerProvider({ children }) {
   };
 
   const searchContent = async (query) => {
-    // TODO: CHECK QUERY AND PARSE CORRECTLY IF IT'S A VIDEO OR A PLAYLIST   
+    let queryType = 'search';
+    if(query.includes('/playlist?list=')) {
+      queryType = 'searchPlaylist';
+    };
 
-    // TODO: SELECT CORRECT API REQUEST DEPENDING ON CONTENT TYPE
-    const response = await searchData(query);   
-    // TODO: SET RESULT TO SELECTED LIST
+    const response = await (
+      (queryType === 'search' ) ? 
+        searchData(query) : 
+        searchPlaylist(query.slice(query.indexOf('=') + 1))
+    );   
+
     const parsedResponse = parseResponse(response);
-    parsedResponse.entriesType = 'video';
+    parsedResponse.entriesType = queryType;
 
     setSelectedList(parsedResponse);
   };

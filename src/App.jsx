@@ -32,7 +32,7 @@ function UserIcon() {
   );
 }
 
-function SearchBar({ onSearch }) {
+function SearchBar() {
   const contentSearchInput = useRef();
   const { searchContent } = useContext(ContentViewerContext);
 
@@ -73,12 +73,12 @@ function SearchBar({ onSearch }) {
   );
 }
 
-function MusicList({ contentData, contentOrigin }) {
+function MusicList() {
   const { selectedList } = useContext(ContentViewerContext);
 
   return(
     <div>
-      <h2 className='font-bold text-xl'>
+      <h2 className='font-bold text-xl mb-4'>
         Songs 
         <span className='font-normal text-base'>
           &nbsp;- { selectedList.entries.length } songs
@@ -86,7 +86,9 @@ function MusicList({ contentData, contentOrigin }) {
       </h2>
       { 
         selectedList.entries.map(item => {
-          return <p key={ item.id.videoId }>{ decode(item.snippet.title) }</p>;
+          // TODO: Once requests go to server, clean this up
+          const id = (selectedList.entriesType === 'search' ? item.id.videoId : item.snippet.resourceId.videoId); 
+          return <p key={ id }>{ decode(item.snippet.title) }</p>;
         }) 
       }
     </div>

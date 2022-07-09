@@ -24,7 +24,7 @@ export const searchPlaylist = async (playlistId) => {
 		`${YOUTUBE_API_URL}/playlistItems?playlistId=${ playlistId }&key=${import.meta.env.VITE_YOUTUBE_API_KEY}&part=snippet`, 
 		requestSettings
 	);
-	const json = await data.json();
-	if(json.error) return null;
-	return json;
+	const response = await data.json();
+	if(response.error) return null;
+	return response;
 }
