@@ -6,6 +6,14 @@ import ContentViewerProvider, { ContentViewerContext } from './ContentViewerCont
 import { FaSearch, FaTrash } from 'react-icons/fa';
 import { FiPlus } from 'react-icons/fi';
 
+// TODO: Change this once rest api is built as it will be redundant
+function getResourceId(resource, type) {
+  return (type === 'search' ? 
+    resource.id.videoId :
+    resource.snippet.resourceId.videoId
+  );
+}
+
 function App() {
   return(
     <ContentViewerProvider>
@@ -76,38 +84,90 @@ function SearchBar() {
 
 function MusicList() {
   const { selectedList } = useContext(ContentViewerContext);
+  const [ selectedSong, setSelectedSong ] = useState(null);
+
+  const handleSelect = (resourceId) => {
+    const resource = selectedList.entries.find((item) => {
+      const id = getResourceId(item, selectedList.entriesType);
+      
+      return id === resourceId;
+    })   
+
+    setSelectedSong(resource);
+  };
 
   return(
-    <div>
-      <h2 className='font-bold text-xl mb-4'>
-        Songs 
-        <span className='font-normal text-base'>
-          &nbsp;- { selectedList.entries.length } songs
-        </span>
-      </h2>
+    <div className='flex'>
 
-      <div>
-        { 
-          selectedList.entries.map(item => {
-            // TODO: Once requests go to server, clean this up
-            const id = (selectedList.entriesType === 'search' ? item.id.videoId : item.snippet.resourceId.videoId); 
-            return <MusicEntry key={ id } resource={ item } resourceOrigin={ selectedList.entriesType } />
-          }) 
+      <div className={ selectedSong ? 'w-1/2' : 'w-full' }>
+        <h2 className='font-bold text-xl mb-4'>
+          Songs 
+          <span className='font-normal text-base'>
+            &nbsp;- { selectedList.entries.length } songs
+          </span>
+        </h2>
+
+        {
+          selectedList.entries.length !== 0 && (
+            <div>
+              { 
+                selectedList.entries.map((item, index) => {
+                  const id = getResourceId(item, selectedList.entriesType);
+
+                  return ( 
+                    <MusicEntry 
+                      key={ id } 
+                      resource={ item } 
+                      resourceOrigin={ selectedList.entriesType } 
+                      selected={ (id === selectedSong ) }
+                      onSelect={ handleSelect }
+                    />
+                  );
+                }) 
+              }
+            </div>
+          )
         }
       </div>
+
+      {
+        selectedSong && (
+          <div className='w-1/2 px-5 mt-11 flex'>
+            <div className='w-[320px] h-[180px]'>
+              <img src={ selectedSong.snippet.thumbnails.high.url } className='h-full' />
+            </div>
+
+            <div className='text-sm'>
+              { console.log(selectedSong) }
+              <p>{ decode(selectedSong.snippet.title) }</p>
+              <p>{ selectedSong.snippet.channelTitle }</p>
+              <p>{ selectedSong.snippet.publishedAt }</p>
+            </div>
+          </div>
+        )
+      }
+
     </div>
   );
 }
 
-function MusicEntry({resource, resourceOrigin}) {
+function MusicEntry({resource, resourceOrigin, selected, onSelect }) {
   const controls = (resourceOrigin === 'search' ? (
     <FiPlus />
   ) : (
     <FaTrash />
   ) );
 
+  const classes = `
+    w-full p-1 mb-2 
+    hover:cursor-pointer hover:bg-zinc-800
+    flex justify-between items-center 
+    border ${ selected ? 'border-blue-600 text-blue-600' : '' }
+  `;
+  
+  const id = getResourceId(resource, resourceOrigin);
   return(
-    <div className='w-full p-1 mb-2 border flex justify-between items-center'>
+    <div className={ classes } onClick={ () => onSelect(id) }>
       <div>
         <p>{ decode(resource.snippet.title) }</p>
       </div>
