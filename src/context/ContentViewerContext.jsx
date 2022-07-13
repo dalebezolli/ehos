@@ -1,10 +1,11 @@
-import { searchData, searchPlaylist } from './api';
+import { searchData, searchPlaylist } from '../api';
 import { createContext, useState } from 'react';
 
 export const ContentViewerContext = createContext();
 
 function ContentViewerProvider({ children }) {
   const [ selectedList, setSelectedList ] = useState({
+    selectedSong: null,
     entries: [],
     entriesType: 'video',
     pageInfo: {},
@@ -14,8 +15,6 @@ function ContentViewerProvider({ children }) {
     const parsedResponse = {...selectedList};   
     parsedResponse.entries = res.items;
     parsedResponse.pageInfo = res.pageInfo;
-    // parsedResponse.pageInfo.prevPageToken;
-    // parsedResponse.pageInfo.nextPageToken;
 
     return parsedResponse;
   };
@@ -38,10 +37,15 @@ function ContentViewerProvider({ children }) {
     setSelectedList(parsedResponse);
   };
 
+  const selectSong = (selectedSong) => {
+    setSelectedList({...selectedList, selectedSong});
+  }
+
 	return (
     <ContentViewerContext.Provider value={{
       selectedList,
       searchContent,
+      selectSong,
     }}>
       { children }
     </ContentViewerContext.Provider>

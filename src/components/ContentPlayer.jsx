@@ -1,10 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { FaPause, FaPlay } from 'react-icons/fa';
+
+import { getResourceId } from '../utils/getResourceId';
+import { ContentViewerContext } from '../context/ContentViewerContext';
 
 const loadContent = (id, retrievePlayer) => {
 	let player = null;
 
-	function onYouTubeIframeAPIReady() {
+	const onYouTubeIframeAPIReady = _ => {
 		player = new YT.Player('player', {
 			height: '390',
 			width: '640',
@@ -23,7 +26,7 @@ const loadContent = (id, retrievePlayer) => {
 		player.i.classList.add('hidden');
 	}
 
-	function onPlayerReady(event) {
+	const onPlayerReady = (event) => {
 		event.target.playVideo();
 		retrievePlayer(event.target);
 
@@ -41,25 +44,13 @@ const unloadContent = (player) => {
 	player.destroy();
 };
 
-// TODO: Change this once rest api is built as it will be redundant
-function getResourceId(resource) {
-	let id = '';
-	try {
-		id = resource.snippet.resourceId.videoId;
-	} catch {
-		id = resource.id.videoId;
-	}
-
-  return id;
-}
-
-function updateSlider(player) {
+const updateSlider = (player) => {
 	if(!player) return;
 	document.getElementById('player-current-time').innerText = formatTime(player.getCurrentTime());
 	document.getElementById('player-duration').innerText = formatTime(player.getDuration());
 }
 
-function formatTime(time) {
+const formatTime = (time) => {
 	time = Math.round(time);
 	let minutes = Math.floor(time / 60);
 	let seconds = time - minutes * 60;
@@ -68,8 +59,8 @@ function formatTime(time) {
 	return minutes + ':' + seconds;
 }
 
-function ContentPlayer({ currentSong }) {
-	const id = getResourceId(currentSong);
+const ContentPlayer = () => {
+	const { selectedList } = useContext(ContentViewerContext);
 	const [ player, setPlayer ] = useState(null);
   const [ playing, setPlaying ] = useState(false);
 	const [ showYTPlayer, setShowYTPlayer ] = useState(false);
@@ -80,7 +71,7 @@ function ContentPlayer({ currentSong }) {
 	}
 
   useEffect(() => {
-			
+		const id = getResourceId(selectedList.selectedSong);	
 		if(firstLoad.current) {
 			loadContent(id, retrievePlayer);
 			firstLoad.current = false;
@@ -88,7 +79,6 @@ function ContentPlayer({ currentSong }) {
 		}
 
 		if(player) {
-			console.log('change');
 			player.loadVideoById(id, 0);
 			setPlaying(true);
 		}
@@ -96,7 +86,7 @@ function ContentPlayer({ currentSong }) {
     return () => {
       // unloadContent(player);
     };
-  }, [id]);
+  }, [selectedList.selectedSong]);
 
 	useEffect(() => {
 		setPlaying(player !== null);
@@ -150,13 +140,13 @@ function ContentPlayer({ currentSong }) {
 				}
 			>
 				<img 
-					src={ currentSong.snippet.thumbnails.high.url } 
+					src={ selectedList.selectedSong.snippet.thumbnails.high.url } 
 					className='h-8 mr-8' 
 				/>
 
 				<div className='flex flex-col text-xs'>
-					<p>{ currentSong.snippet.title }</p>
-					<p>{ currentSong.snippet.channelTitle }</p>
+					<p>{ selectedList.selectedSong.snippet.title }</p>
+					<p>{ selectedList.selectedSong.snippet.channelTitle }</p>
 				</div>
 			</div>
 
