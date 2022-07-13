@@ -1,9 +1,10 @@
 import { decode } from 'he';
 import { Link } from 'wouter';
-import { useState, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import ContentViewerProvider, { ContentViewerContext } from './ContentViewerContext';
+import ContentPlayer from './ContentPlayer';
 
-import { FaSearch, FaTrash } from 'react-icons/fa';
+import { FaSearch, FaTrash, FaPlay, FaPause } from 'react-icons/fa';
 import { FiPlus } from 'react-icons/fi';
 
 // TODO: Change this once rest api is built as it will be redundant
@@ -97,34 +98,55 @@ function MusicList() {
   };
 
   return(
-    <div className='flex'>
+    <div>
+      <div className='flex'>
 
-      <div className={ selectedSong ? 'w-1/2' : 'w-full' }>
-        <h2 className='font-bold text-xl mb-4'>
-          Songs 
-          <span className='font-normal text-base'>
-            &nbsp;- { selectedList.entries.length } songs
-          </span>
-        </h2>
+        <div className={ selectedSong ? 'w-1/2' : 'w-full' }>
+          <h2 className='font-bold text-xl mb-4'>
+            Songs 
+            <span className='font-normal text-base'>
+              &nbsp;- { selectedList.entries.length } songs
+            </span>
+          </h2>
+
+          {
+            selectedList.entries.length !== 0 && (
+              <div>
+                { 
+                  selectedList.entries.map((item, index) => {
+                    const id = getResourceId(item, selectedList.entriesType);
+
+                    return ( 
+                      <MusicEntry 
+                        key={ id } 
+                        resource={ item } 
+                        resourceOrigin={ selectedList.entriesType } 
+                        selected={ (id === selectedSong ) }
+                        onSelect={ handleSelect }
+                      />
+                    );
+                  }) 
+                }
+              </div>
+            )
+          }
+        </div>
 
         {
-          selectedList.entries.length !== 0 && (
-            <div>
-              { 
-                selectedList.entries.map((item, index) => {
-                  const id = getResourceId(item, selectedList.entriesType);
+          selectedSong && (
+            <div className='w-1/2 px-5 mt-11 flex'>
+              <div className='w-[320px] h-[180px] min-w-[320px]'>
+                <img 
+                  src={ selectedSong.snippet.thumbnails.high.url } 
+                  className='h-full' 
+                />
+              </div>
 
-                  return ( 
-                    <MusicEntry 
-                      key={ id } 
-                      resource={ item } 
-                      resourceOrigin={ selectedList.entriesType } 
-                      selected={ (id === selectedSong ) }
-                      onSelect={ handleSelect }
-                    />
-                  );
-                }) 
-              }
+              <div className='text-sm'>
+                <p>{ decode(selectedSong.snippet.title) }</p>
+                <p>{ selectedSong.snippet.channelTitle }</p>
+                <p>{ selectedSong.snippet.publishedAt }</p>
+              </div>
             </div>
           )
         }
@@ -132,21 +154,11 @@ function MusicList() {
 
       {
         selectedSong && (
-          <div className='w-1/2 px-5 mt-11 flex'>
-            <div className='w-[320px] h-[180px]'>
-              <img src={ selectedSong.snippet.thumbnails.high.url } className='h-full' />
-            </div>
-
-            <div className='text-sm'>
-              { console.log(selectedSong) }
-              <p>{ decode(selectedSong.snippet.title) }</p>
-              <p>{ selectedSong.snippet.channelTitle }</p>
-              <p>{ selectedSong.snippet.publishedAt }</p>
-            </div>
+          <div className='fixed bottom-0 container'>
+            <ContentPlayer currentSong={ selectedSong } />
           </div>
         )
       }
-
     </div>
   );
 }
