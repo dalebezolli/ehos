@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useRef } from 'react';
+import { useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { FaPause, FaPlay } from 'react-icons/fa';
 
 import { getResourceId } from '../utils/getResourceId';
@@ -79,10 +79,41 @@ const ContentPlayer = () => {
 	const [ showYTPlayer, setShowYTPlayer ] = useState(false);
 	const firstLoad = useRef(true);
 
+	const handleKeyPress = useCallback((event) => {
+		if(event.target.tagName === 'INPUT') return;
+
+		if(event.keyCode === 32) {
+			setPlaying(!playing);
+		}
+
+		if(event.keyCode === 73) {
+			setShowYTPlayer(!showYTPlayer);
+		}
+
+		if(event.keyCode === 37) {
+			player.seekTo(player.getCurrentTime() - 10);
+			updateTimeDisplay(player);
+			updateProgressBar(player);
+		}
+
+		if(event.keyCode === 39) {
+			player.seekTo(player.getCurrentTime() + 10);
+			updateTimeDisplay(player);
+			updateProgressBar(player);
+		}
+	}, [playing, showYTPlayer]);
+
 	const retrievePlayer = (player) => {
 		setPlayer(_ => player);
 	}
 
+	useEffect(() => {
+    document.addEventListener('keydown', handleKeyPress);
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleKeyPress]);
+	
   useEffect(() => {
 		const id = getResourceId(selectedList.selectedSong);	
 		if(firstLoad.current) {
@@ -121,6 +152,13 @@ const ContentPlayer = () => {
 
 	}, [showYTPlayer]);
 
+	useEffect(() => {
+		if(!player) return;	
+
+		if(playing) player.playVideo(); 
+		else player.pauseVideo();
+	}, [playing]);
+
 
   return (
     <div className='
@@ -132,12 +170,8 @@ const ContentPlayer = () => {
 			<div className='hover:cursor-pointer'>
 				{
 					playing ? 
-						<FaPause onClick={ 
-							() => { player.pauseVideo(); setPlaying(false); } 
-						} /> : 
-						<FaPlay onClick={ 
-							() => { player.playVideo(); setPlaying(true); } 
-						} />
+						<FaPause onClick={ () => setPlaying(false) } /> : 
+						<FaPlay onClick={ () => setPlaying(true) } />
 				}
 			</div>
 
