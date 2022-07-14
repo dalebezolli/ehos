@@ -30,11 +30,16 @@ const loadContent = (id, retrievePlayer) => {
 		event.target.playVideo();
 		retrievePlayer(event.target);
 
-		updateSlider();
+		updateTimeDisplay(event.target);
+		updateProgressBar(event.target);
 
 		setInterval(() => {
-			updateSlider(event.target);
-		}, 500);
+			updateTimeDisplay(player);
+		}, 1000);
+
+		setInterval(() => {
+			updateProgressBar(event.target);
+		}, 1000);
 	}
 
 	onYouTubeIframeAPIReady();
@@ -44,10 +49,18 @@ const unloadContent = (player) => {
 	player.destroy();
 };
 
-const updateSlider = (player) => {
-	if(!player) return;
+const updateTimeDisplay = (player) => {
 	document.getElementById('player-current-time').innerText = formatTime(player.getCurrentTime());
 	document.getElementById('player-duration').innerText = formatTime(player.getDuration());
+}
+
+const updateProgressBar = (player) => {
+	document.getElementById('player-progress-bar').value = (player.getCurrentTime() / player.getDuration()) * 100;
+}
+
+const selectProgressBarTimer = (event, player) => {
+	let newTime = player.getDuration() * (event.target.value / 100);
+	player.seekTo(newTime);
 }
 
 const formatTime = (time) => {
@@ -75,6 +88,7 @@ const ContentPlayer = () => {
 		if(firstLoad.current) {
 			loadContent(id, retrievePlayer);
 			firstLoad.current = false;
+
 			return;
 		}
 
@@ -127,10 +141,16 @@ const ContentPlayer = () => {
 				}
 			</div>
 
-			<div className='flex'>
-				<p id='player-current-time'></p>
-				<p>&nbsp;</p>
-				<p id='player-duration'></p>
+			<div className='flex w-2/3'>
+				<p id='player-current-time' className='p-2'></p>
+				<input 
+					type='range' 
+					name='player-progress-bar' 
+					id='player-progress-bar' 
+					className='w-full'
+					onMouseUp={ (event) => selectProgressBarTimer(event, player) } 
+				/>
+				<p id='player-duration' className='p-2'></p>
 			</div>
 
 			<div 
