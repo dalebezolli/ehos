@@ -1,11 +1,11 @@
-import { Link } from 'wouter';
+import { Link } from 'react-router-dom';
 import SearchBar from './SearchBar';
 
 const NavBar = _ => {
 	return(
 		<nav className='container mx-auto'>
 			<div className='flex justify-between py-3'>
-					<Link href='/' className='font-bold hover:text-pink-600'>
+					<Link to='/' className='font-bold hover:text-pink-600'>
 						Music Manager
 					</Link>
 					<SearchBar />

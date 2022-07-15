@@ -1,13 +1,25 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ContentViewerProvider from './context/ContentViewerContext';
+import PageLayout from './routes/PageLayout';
 
-import NavBar from './components/NavBar';
-import Routes from './routes/Routes';
+import Home from './routes/Home';
+import MusicList from './routes/MusicList';
+import NoRoute from './routes/NoRoute';
 
 function App() {
   return(
     <ContentViewerProvider>
-      <NavBar />
-      <Routes />
+      <BrowserRouter>
+      	<Routes>
+
+          <Route path='/' element={ <PageLayout /> }>
+            <Route path='/' element={ <Home /> } />
+            <Route path='list' element={ <MusicList /> } />
+            <Route path='*' element={ <NoRoute /> } />
+          </Route>
+
+        </Routes>
+      </BrowserRouter>
     </ContentViewerProvider>
   );
 }

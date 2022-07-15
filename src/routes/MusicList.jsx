@@ -1,7 +1,7 @@
-import { useState, useContext } from 'react';
+import { useEffect, useContext } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { ContentViewerContext } from '../context/ContentViewerContext';
-import ContentPlayer from './ContentPlayer';
 
 import { getResourceId } from '../utils/getResourceId';
 import { decode } from 'he';
@@ -10,7 +10,8 @@ import { FiPlus } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa';
 
 const MusicList = () => {
-  const { selectedList, selectSong } = useContext(ContentViewerContext);
+  const { selectedList, selectSong, searchContent } = useContext(ContentViewerContext);
+  const [ searchParams, setSearchParams ] = useSearchParams();
 
   const handleSelect = (resourceId) => {
     const resource = selectedList.entries.find((item) => {
@@ -21,6 +22,11 @@ const MusicList = () => {
 
     selectSong(resource);
   };
+
+  useEffect(() => {
+    searchContent(searchParams.get('search'));
+  }, [searchParams.get('search')]);
+  
 
   return(
     <div className='flex'>

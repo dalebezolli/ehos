@@ -1,45 +1,55 @@
-import { useContext, useRef } from 'react';
-import { ContentViewerContext } from '../context/ContentViewerContext';
+import { useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { FaSearch } from 'react-icons/fa';
 
 const SearchBar = _ => {
   const contentSearchInput = useRef();
-  const { searchContent } = useContext(ContentViewerContext);
 
-  const handleKeyUp = (key) => {
-    if(key.keyCode !== 13) return;
+  const navigate = useNavigate();
+  const [ searchParams, setSearchParams ] = useSearchParams();
+
+  const handleKeyUp = (event) => {
+    event.preventDefault();   
+
+    if(event.keyCode !== 13) return;
     const input = contentSearchInput.current.value;
     if(!input) return;
 
-    searchContent(input);
+    if(searchParams.get('serarch') === input) return;
+    console.log('search');
+    navigate(`/list?search=${ encodeURIComponent(input) }`);
   }
 
-  const handleClick = _ => {
+  const handleClick = (event) => {
+    event.preventDefault();   
     const input = contentSearchInput.current.value;
     if(!input) return;
 
-    searchContent(input);
+    if(searchParams.get('serarch') === input) return;
+    navigate(`/list?search=${ encodeURIComponent(input) }`);
   };
 
   return (
     <div className='h-min'>
-      <input 
-        type='text' 
-        name='content-search' 
-        id='content-search' 
-        placeholder='Search'
-        ref={ contentSearchInput }
-        onKeyUp={ handleKeyUp }
-        className='bg-black text-white w-[400px] border border-black border-b-white'
-      />
+      <form method='get'>
+        <input 
+          type='text' 
+          name='content-search' 
+          id='content-search' 
+          placeholder='Search'
+          ref={ contentSearchInput }
+          onKeyUp={ handleKeyUp }
+          className='bg-black text-white w-[400px] border border-black border-b-white'
+        />
 
-      <button 
-        className='px-2 hover:text-pink-600' 
-        onClick={ handleClick }
-      >
-        <FaSearch />
-      </button>
+        <button 
+          className='px-2 hover:text-pink-600' 
+          onClick={ handleClick }
+        >
+          <FaSearch />
+        </button>
+      </form>
     </div>
   );
 }
