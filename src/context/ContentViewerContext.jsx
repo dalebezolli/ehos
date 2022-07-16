@@ -10,6 +10,7 @@ function ContentViewerProvider({ children }) {
     entriesType: 'video',
     pageInfo: {},
   });
+  const [error, setError] = useState(null);
 
   const parseResponse = (res) => {
     const parsedResponse = {...selectedList};   
@@ -25,11 +26,18 @@ function ContentViewerProvider({ children }) {
       queryType = 'searchPlaylist';
     };
 
-    const response = await (
-      (queryType === 'search' ) ? 
-        searchData(query) : 
-        searchPlaylist(query.slice(query.indexOf('=') + 1))
-    );   
+    let response;
+    try {
+       response = await (
+        (queryType === 'search' ) ? 
+          searchData(query) : 
+          searchPlaylist(query.slice(query.indexOf('=') + 1))
+      );   
+      setError(null);
+    } catch(e) {
+      setError(e);
+      return;
+    }
 
     const parsedResponse = parseResponse(response);
     parsedResponse.entriesType = queryType;
@@ -46,6 +54,7 @@ function ContentViewerProvider({ children }) {
       selectedList,
       searchContent,
       selectSong,
+      error,
     }}>
       { children }
     </ContentViewerContext.Provider>

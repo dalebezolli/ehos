@@ -10,13 +10,21 @@ const requestSettings = {
 
 const YOUTUBE_API_URL = 'https://youtube.googleapis.com/youtube/v3';
 
+const generateError = (error) => {
+	let message = (error.code === 404) ? 'Request couldn\'t be found' : 'Internal error';
+	console.log(message);
+	return { code: error.code, message };
+}
+
 export const searchData = async (query) => {
 	const data = await fetch(
 		`${YOUTUBE_API_URL}/search?q=${query}&key=${import.meta.env.VITE_YOUTUBE_API_KEY}&part=snippet`, 
 		requestSettings
 	);
-	const json = await data.json();
-	return json;
+	const response = await data.json();
+
+	if(response.error) throw generateError(response.error);
+	return response;
 };
 
 export const searchPlaylist = async (playlistId) => {
@@ -25,6 +33,7 @@ export const searchPlaylist = async (playlistId) => {
 		requestSettings
 	);
 	const response = await data.json();
-	if(response.error) return null;
+
+	if(response.error) throw generateError(response.error);
 	return response;
 }

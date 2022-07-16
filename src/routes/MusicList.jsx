@@ -10,7 +10,7 @@ import { FiPlus } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa';
 
 const MusicList = () => {
-  const { selectedList, selectSong, searchContent } = useContext(ContentViewerContext);
+  const { selectedList, selectSong, searchContent, error : searchError } = useContext(ContentViewerContext);
   const [ searchParams, setSearchParams ] = useSearchParams();
 
   const handleSelect = (resourceId) => {
@@ -27,6 +27,11 @@ const MusicList = () => {
     searchContent(searchParams.get('search'));
   }, [searchParams.get('search')]);
   
+  if(searchError) return (
+    <div>
+      <h1>Error: { searchError.message }</h1>
+    </div>
+  )
 
   return(
     <div className='flex'>
