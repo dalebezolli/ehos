@@ -45,13 +45,16 @@ const MusicList = () => {
               { 
                 selectedList.entries.map((item) => {
                   const id = getResourceId(item);
+                  const selectedSongId = selectedList.selectedSong ? 
+                    getResourceId(selectedList.selectedSong) : 
+                    null;
 
                   return ( 
                     <MusicEntry 
                       key={ id } 
                       resource={ item } 
                       resourceOrigin={ selectedList.entriesType } 
-                      selected={ (id === selectedList.selectedSong ) }
+                      selected={ (id === selectedSongId) }
                       onSelect={ handleSelect }
                     />
                   );
