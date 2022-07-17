@@ -1,9 +1,9 @@
-import { useEffect, useContext } from 'react';
+import { useEffect, useContext, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { ContentViewerContext } from '../context/ContentViewerContext';
 
-import { getResourceId } from '../utils/getResourceId';
+import { getResourceId, isInViewport } from '../utils/helpers';
 import { decode } from 'he';
 
 import { FiPlus } from 'react-icons/fi';
@@ -12,6 +12,8 @@ import { FaTrash } from 'react-icons/fa';
 const MusicList = () => {
   const { selectedList, selectSong, searchContent, error : searchError } = useContext(ContentViewerContext);
   const [ searchParams, setSearchParams ] = useSearchParams();
+  const lastEntry = useRef();
+  const [ loadMore, setLoadMore ] = useState(false);
 
   const handleSelect = (resourceId) => {
     const resource = selectedList.entries.find((item) => {
@@ -26,6 +28,14 @@ const MusicList = () => {
   useEffect(() => {
     searchContent(searchParams.get('search'));
   }, [searchParams.get('search')]);
+
+  useEffect(() => {
+    if(loadMore) 
+      searchContent(
+        searchParams.get('search'), 
+        { append: true, page: selectedList.pageInfo.nextPageToken }
+      );
+  }, [loadMore]);
   
   if(searchError) return (
     <div>
@@ -46,22 +56,35 @@ const MusicList = () => {
 
         {
           selectedList.entries.length !== 0 && (
-            <div>
+            <div 
+              className={ `${ selectedList.selectedSong ? 'h-[75vh]' : 'h-[80vh]' } overflow-scroll pr-3` }
+              onScroll={ () => { 
+                if(!loadMore && isInViewport(lastEntry.current)) {
+                  setLoadMore(true);
+                } else if(loadMore && !isInViewport(lastEntry.current)) {
+                  setLoadMore(false);
+                }
+              } }
+            >
               { 
-                selectedList.entries.map((item) => {
+                selectedList.entries.map((item, index) => {
                   const id = getResourceId(item);
                   const selectedSongId = selectedList.selectedSong ? 
                     getResourceId(selectedList.selectedSong) : 
                     null;
 
-                  return ( 
-                    <MusicEntry 
-                      key={ id } 
+                  const element = <MusicEntry 
+                      index={ index }
                       resource={ item } 
                       resourceOrigin={ selectedList.entriesType } 
                       selected={ (id === selectedSongId) }
                       onSelect={ handleSelect }
                     />
+
+                  return ( 
+                    index === selectedList.entries.length - 1 ? 
+                      <div key={ id } ref={ lastEntry }>{ element }</div> :
+                      <div key={ id }>{ element }</div>
                   );
                 }) 
               }
@@ -92,7 +115,7 @@ const MusicList = () => {
   );
 }
 
-const MusicEntry = ({resource, resourceOrigin, selected, onSelect }) => {
+const MusicEntry = ({index ,resource, resourceOrigin, selected, onSelect }) => {
   const controls = (resourceOrigin === 'search' ? (
     <FiPlus />
   ) : (
@@ -110,7 +133,7 @@ const MusicEntry = ({resource, resourceOrigin, selected, onSelect }) => {
   return(
     <div className={ classes } onClick={ () => onSelect(id) }>
       <div>
-        <p>{ decode(resource.snippet.title) }</p>
+        <p>{ index + 1 }. { decode(resource.snippet.title) }</p>
       </div>
 
       <div>

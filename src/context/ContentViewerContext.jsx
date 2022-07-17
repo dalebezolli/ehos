@@ -1,4 +1,4 @@
-import { searchData, searchPlaylist } from '../api';
+import { searchData, searchPlaylist } from '../utils/api';
 import { createContext, useState } from 'react';
 
 export const ContentViewerContext = createContext();
@@ -12,15 +12,21 @@ function ContentViewerProvider({ children }) {
   });
   const [error, setError] = useState(null);
 
-  const parseResponse = (res) => {
+  const parseResponse = (res, append) => {
     const parsedResponse = {...selectedList};   
-    parsedResponse.entries = res.items;
+    parsedResponse.entries = (!append) ? res.items : [...parsedResponse.entries, ...res.items];
     parsedResponse.pageInfo = res.pageInfo;
+    if(parsedResponse.pageInfo) {
+      parsedResponse.pageInfo.nextPageToken = res.nextPageToken || null;
+      parsedResponse.pageInfo.prevPageToken = res.prevPageToken || null;
+    }
 
     return parsedResponse;
   };
 
-  const searchContent = async (query) => {
+  const searchContent = async (query, opts) => {
+	  let append = opts && opts.append ? opts.append || false : false;
+
     let queryType = 'search';
     if(query.includes('/playlist?list=')) {
       queryType = 'searchPlaylist';
@@ -30,7 +36,7 @@ function ContentViewerProvider({ children }) {
     try {
        response = await (
         (queryType === 'search' ) ? 
-          searchData(query) : 
+          searchData(query, opts) : 
           searchPlaylist(query.slice(query.indexOf('=') + 1))
       );   
       setError(null);
@@ -39,7 +45,7 @@ function ContentViewerProvider({ children }) {
       return;
     }
 
-    const parsedResponse = parseResponse(response);
+    const parsedResponse = parseResponse(response, append);
     parsedResponse.entriesType = queryType;
 
     setSelectedList(parsedResponse);

@@ -17,7 +17,6 @@ const SearchBar = _ => {
     if(!input) return;
 
     if(searchParams.get('serarch') === input) return;
-    console.log('search');
     navigate(`/list?search=${ encodeURIComponent(input) }`);
   }
 

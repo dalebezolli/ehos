@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { FaPause, FaPlay } from 'react-icons/fa';
 
-import { getResourceId } from '../utils/getResourceId';
+import { getResourceId } from '../utils/helpers';
 import { ContentViewerContext } from '../context/ContentViewerContext';
 
 const loadContent = (id, retrievePlayer) => {
