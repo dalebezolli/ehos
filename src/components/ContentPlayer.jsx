@@ -1,213 +1,251 @@
-import { useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { FaPause, FaPlay } from 'react-icons/fa';
-
-import { getResourceId } from '../utils/helpers';
+import YouTube from 'react-youtube';
+import { useState, useContext, useEffect } from 'react';
 import { ContentViewerContext } from '../context/ContentViewerContext';
 
-const loadContent = (id, retrievePlayer) => {
-	let player = null;
+import { getResourceId, formatSecondsToTime } from '../utils/helpers';
+import { decode } from 'he';
 
-	const onYouTubeIframeAPIReady = _ => {
-		player = new YT.Player('player', {
-			height: '390',
-			width: '640',
-			videoId: id,
-			playerVars: {
-				'playsinline': 1
-			},
-			events: {
-				'onReady': onPlayerReady,
+import { FaPause, FaPlay } from 'react-icons/fa';
+
+const ContentPlayer = _ => {
+	const { selectedList } = useContext(ContentViewerContext);
+	const [ player, setPlayer ] = useState({ 
+		status: 'empty',
+		playerHandler: null,
+		currentTime: 0,
+		currentTimeIntervalHandle: null,
+		progressBar: 0,
+		progressBarIntervalHandle: null,
+		duration: 0,
+		showYtIframe: false,
+	});
+	
+	useEffect(_ => {
+		console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'status:', player.status, player.playerHandler && player.playerHandler.getPlayerState());
+		if(player.status === 'playing') {
+			let timeInterval = player.currentTimeIntervalHandle;
+			let progressBarInterval = player.progressBarIntervalHandle;
+
+			console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'playing', timeInterval, progressBarInterval);
+			if(timeInterval === null) {
+				timeInterval = setInterval(() => { 
+					updatePlayerTimeDisplay(player.playerHandler.getCurrentTime());
+				}, 200);
+
+				console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'timeInterval:', timeInterval);
 			}
-		});
+		
+			if(progressBarInterval === null) {
+				progressBarInterval = setInterval(() => { 
+					updatePlayerProgressBar(player.playerHandler.getCurrentTime(), player.playerHandler.getDuration()); 
+				}, 200);
 
-		player.i.classList.add('absolute');
-		player.i.classList.add('right-0');
-		player.i.classList.add('bottom-10');
-		player.i.classList.add('hidden');
+				console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'progressBarInterval:', progressBarInterval);
+			}
+
+			setPlayer({ 
+				...player, 
+				duration: player.playerHandler.getDuration(),
+				currentTimeIntervalHandle: timeInterval,
+				progressBarIntervalHandle: progressBarInterval,
+			});
+		}
+
+		if(player.status === 'empty' && player.currentTimeIntervalHandle !== null) {
+			let currentTimeIntervalHandle = player.currentTimeIntervalHandle;
+			let progressBarIntervalHandle = player.progressBarIntervalHandle;
+
+			console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'cleanup...', player.currentTimeIntervalHandle, player.progressBarIntervalHandle);
+			if(player.currentTimeIntervalHandle !== null) {
+				console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'cleanup timeInterval:', currentTimeIntervalHandle);
+				clearInterval(player.currentTimeIntervalHandle);
+				currentTimeIntervalHandle = null;
+			}
+
+			if(player.progressBarIntervalHandle !== null) {
+				console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'cleanup progressBarInterval:', progressBarIntervalHandle);
+				clearInterval(player.progressBarIntervalHandle);
+				progressBarIntervalHandle = null;
+			}
+			setPlayer({ ...player, currentTimeIntervalHandle, progressBarIntervalHandle });
+		}
+
+	}, [player.status]);
+
+	const updatePlayerTimeDisplay = (currentTime) => {
+		setPlayer((currPlayer) => ({
+			...currPlayer,
+			currentTime: currentTime,
+		}));
+	}
+
+	const updatePlayerProgressBar = (currentTime, duration) => {
+		setPlayer((currPlayer) => ({
+			...currPlayer,
+			progressBar: (currentTime / duration) * 100
+		}))
+	}
+
+	const handleProgressBarMouseMove = (event) => {
+		if(event.buttons === 1) {
+			setPlayer((currPlayer) => ({ 
+				...currPlayer, 
+				currentTime: (event.target.value / 100) * currPlayer.playerHandler.getDuration(),
+			}));
+		}
+	}
+
+	const handleProgressBarMouseDown = (event) => {
+		console.log('progressbar down');
+		let timeInterval = player.currentTimeIntervalHandle;
+		let progressBarInterval = player.progressBarIntervalHandle;
+
+		if(timeInterval !== null) {
+			clearInterval(timeInterval);
+			timeInterval = null;
+		}
+
+		if(progressBarInterval !== null) {
+			clearInterval(progressBarInterval);
+			progressBarInterval = null;
+		}
+
+		setPlayer({ 
+			...player, 
+			currentTimeIntervalHandle: timeInterval, 
+			progressBarIntervalHandle: progressBarInterval 
+		});
+	}
+
+	const handleProgressBarMouseUp = (event) => {
+		console.log('progressbar up');
+		let timeInterval = player.currentTimeIntervalHandle;
+		let progressBarInterval = player.progressBarIntervalHandle;
+
+		player.playerHandler.seekTo(player.currentTime);
+		if(timeInterval === null) {
+			timeInterval = setInterval(() => { 
+				updatePlayerTimeDisplay(player.playerHandler.getCurrentTime());
+			}, 200);
+
+			console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'timeInterval:', timeInterval);
+		}
+
+		if(progressBarInterval === null) {
+			progressBarInterval = setInterval(() => { 
+				updatePlayerProgressBar(player.playerHandler.getCurrentTime(), player.playerHandler.getDuration()); 
+			}, 200);
+
+			console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'progressBarInterval:', progressBarInterval);
+		}
+
+		setPlayer({ 
+			...player, 
+			duration: player.playerHandler.getDuration(),
+			currentTimeIntervalHandle: timeInterval,
+			progressBarIntervalHandle: progressBarInterval,
+		});
 	}
 
 	const onPlayerReady = (event) => {
-		event.target.playVideo();
-		retrievePlayer(event.target);
+		setPlayer((currPlayer) => ({ 
+			...currPlayer, 
+			playerHandler: event.target,
+		}));
+	};
 
-		updateTimeDisplay(event.target);
-		updateProgressBar(event.target);
+	const onPlayerStateChange = (event) => {
+		let code = event.data;
+		let status;
 
-		setInterval(() => {
-			updateTimeDisplay(player);
-		}, 1000);
-
-		setInterval(() => {
-			updateProgressBar(event.target);
-		}, 1000);
+		switch(code) {
+			case 0:
+				status = 'finished';
+				break;
+			case 1:
+				status = 'playing';
+				break;
+			case 2:
+				status = 'paused';
+				break;
+			case 3:
+				status = 'loading';
+				break;
+			default:
+				status = 'empty';
+		}
+		setPlayer((currPlayer) => ({ ...currPlayer, status }));
 	}
-
-	onYouTubeIframeAPIReady();
-};
-
-const unloadContent = (player) => {
-	player.destroy();
-};
-
-const updateTimeDisplay = (player) => {
-	document.getElementById('player-current-time').innerText = formatTime(player.getCurrentTime());
-	document.getElementById('player-duration').innerText = formatTime(player.getDuration());
-}
-
-const updateProgressBar = (player) => {
-	document.getElementById('player-progress-bar').value = (player.getCurrentTime() / player.getDuration()) * 100;
-}
-
-const selectProgressBarTimer = (event, player) => {
-	let newTime = player.getDuration() * (event.target.value / 100);
-	player.seekTo(newTime);
-}
-
-const formatTime = (time) => {
-	time = Math.round(time);
-	let minutes = Math.floor(time / 60);
-	let seconds = time - minutes * 60;
-	seconds = seconds < 10 ? '0' + seconds : seconds;
-
-	return minutes + ':' + seconds;
-}
-
-const ContentPlayer = () => {
-	const { selectedList } = useContext(ContentViewerContext);
-	const [ player, setPlayer ] = useState(null);
-  const [ playing, setPlaying ] = useState(false);
-	const [ showYTPlayer, setShowYTPlayer ] = useState(false);
-	const firstLoad = useRef(true);
-
-	const handleKeyPress = useCallback((event) => {
-		if(event.target.tagName === 'INPUT') return;
-
-		if(event.keyCode === 32) {
-			setPlaying(!playing);
-		}
-
-		if(event.keyCode === 73) {
-			setShowYTPlayer(!showYTPlayer);
-		}
-
-		if(event.keyCode === 37) {
-			player.seekTo(player.getCurrentTime() - 10);
-			updateTimeDisplay(player);
-			updateProgressBar(player);
-		}
-
-		if(event.keyCode === 39) {
-			player.seekTo(player.getCurrentTime() + 10);
-			updateTimeDisplay(player);
-			updateProgressBar(player);
-		}
-	}, [playing, showYTPlayer]);
-
-	const retrievePlayer = (player) => {
-		setPlayer(_ => player);
-	}
-
-	useEffect(() => {
-    document.addEventListener('keydown', handleKeyPress);
-    return () => {
-      document.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [handleKeyPress]);
-	
-  useEffect(() => {
-		const id = getResourceId(selectedList.selectedSong);	
-		if(firstLoad.current) {
-			loadContent(id, retrievePlayer);
-			firstLoad.current = false;
-
-			return;
-		}
-
-		if(player) {
-			player.loadVideoById(id, 0);
-			setPlaying(true);
-		}
-
-    return () => {
-      // unloadContent(player);
-    };
-  }, [selectedList.selectedSong]);
-
-	useEffect(() => {
-		setPlaying(player !== null);
-
-		return () => {
-			setPlaying(false);
-		}
-	}, [player]);
-
-	useEffect(() => {
-		if(!player) return;
-
-		if(!showYTPlayer) {
-			player.getIframe().classList.add('hidden');
-		} else {
-			player.getIframe().classList.remove('hidden');
-		}
-
-	}, [showYTPlayer]);
-
-	useEffect(() => {
-		if(!player) return;	
-
-		if(playing) player.playVideo(); 
-		else player.pauseVideo();
-	}, [playing]);
-
 
   return (
-    <div className='
-			w-full h-10 
-		bg-white text-black 
-			flex justify-between items-center 
-			px-3 relative' 	
+    <div 
+			className='
+				w-full h-10 
+			bg-white text-black 
+				flex justify-between items-center 
+				px-3 relative' 	
 		>
 			<div className='hover:cursor-pointer'>
 				{
-					playing ? 
-						<FaPause onClick={ () => setPlaying(false) } /> : 
-						<FaPlay onClick={ () => setPlaying(true) } />
+					player.status === 'playing' ?
+						<FaPause onClick={ () => { 
+							player.playerHandler.pauseVideo();
+						}} /> :
+						<FaPlay onClick={ () => {
+							player.playerHandler.playVideo();
+						}} /> 
 				}
 			</div>
 
 			<div className='flex w-2/3'>
-				<p id='player-current-time' className='p-2'></p>
+				<p className='p-2'>{ formatSecondsToTime(player.currentTime) }</p>
 				<input 
 					type='range' 
 					name='player-progress-bar' 
 					id='player-progress-bar' 
 					className='w-full'
-					onMouseUp={ (event) => selectProgressBarTimer(event, player) } 
+					value={ player.progressBar }
+					onMouseDown={ handleProgressBarMouseDown }
+					onMouseUp={ handleProgressBarMouseUp } 
+					onMouseMove={ handleProgressBarMouseMove }
+					onChange={ (event) => { setPlayer({...player, progressBar: event.target.value}) } }
 				/>
-				<p id='player-duration' className='p-2'></p>
+				<p className='p-2'>{ formatSecondsToTime(player.duration) }</p>
 			</div>
 
-			<div 
-				className='flex hover:cursor-pointer' 
-				onClick={ 
-					() => setShowYTPlayer((currShowYTPlayer) => !currShowYTPlayer)
-				}
-			>
-				<img 
-					src={ selectedList.selectedSong.snippet.thumbnails.high.url } 
-					className='h-8 mr-8' 
-				/>
+			{
+				selectedList.selectedSong &&
+				<div 
+					className='flex hover:cursor-pointer' 
+					onClick={ 
+						() => setPlayer({ ...player, showYtIframe: !player.showYtIframe })
+					}
+				>
+					<img 
+						src={ selectedList.selectedSong.snippet.thumbnails.high.url } 
+						className='h-8 mr-8' 
+					/>
 
-				<div className='flex flex-col text-xs'>
-					<p>{ selectedList.selectedSong.snippet.title }</p>
-					<p>{ selectedList.selectedSong.snippet.channelTitle }</p>
+					<div className='flex flex-col text-xs'>
+						<p>{ decode(selectedList.selectedSong.snippet.title) }</p>
+						<p>{ decode(selectedList.selectedSong.snippet.channelTitle) }</p>
+					</div>
 				</div>
-			</div>
-
+			}
 			
-			<div id={`player`} ></div>
+			{
+				selectedList.selectedSong &&
+				<YouTube 
+					videoId={ getResourceId(selectedList.selectedSong) } 
+					opts={{ height: '390', width: '640', playerVars: { autoplay: 1 } }} 
+					className={`absolute right-0 bottom-10 ${ (player.showYtIframe) ? '' : 'hidden' }`}
+					onReady={ onPlayerReady }
+					onStateChange={ onPlayerStateChange }
+					onEnd={ () => console.log('### FINISHED ###') }
+				/>
+			}
     </div>
   );
-}
+};
 
 export default ContentPlayer;

@@ -9,21 +9,18 @@ const PageLayout = _ => {
 	const { selectedList } = useContext(ContentViewerContext);
 
 	return (
-		<div>
+		<div className='relative h-screen'>
 			<NavBar />
 
 			<div className='container mx-auto pt-3'>
 				<Outlet />
 			</div>
-
+			
 			{
-				selectedList.selectedSong && (
-					<div className='mx-auto container'>
-						<div className='fixed bottom-0 container mx-auto'>
-							<ContentPlayer currentSong={ selectedList.selectedSong } />
-						</div>
-					</div>
-				)
+				selectedList.selectedSong &&
+				<div className='absolute bottom-0 left-1/2 -translate-x-1/2 container'>
+					<ContentPlayer />
+				</div>
 			}
 		</div>
 	);
