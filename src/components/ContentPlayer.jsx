@@ -8,7 +8,7 @@ import { decode } from 'he';
 import { FaPause, FaPlay } from 'react-icons/fa';
 
 const ContentPlayer = _ => {
-	const { selectedList } = useContext(ContentViewerContext);
+	const { selectedList, selectSong } = useContext(ContentViewerContext);
 	const [ player, setPlayer ] = useState({ 
 		status: 'empty',
 		playerHandler: null,
@@ -154,6 +154,14 @@ const ContentPlayer = _ => {
 		}));
 	};
 
+	const onSongEnd = (event) => {
+		let currentSongIndex = selectedList.entries.findIndex((song) => {
+			return song === selectedList.selectedSong; 
+		})
+		let nextSong = selectedList.entries[currentSongIndex + 1];
+		selectSong(nextSong);
+	}
+
 	const onPlayerStateChange = (event) => {
 		let code = event.data;
 		let status;
@@ -241,7 +249,7 @@ const ContentPlayer = _ => {
 					className={`absolute right-0 bottom-10 ${ (player.showYtIframe) ? '' : 'hidden' }`}
 					onReady={ onPlayerReady }
 					onStateChange={ onPlayerStateChange }
-					onEnd={ () => console.log('### FINISHED ###') }
+					onEnd={ onSongEnd }
 				/>
 			}
     </div>
