@@ -6,11 +6,13 @@ import { getResourceId, formatSecondsToTime } from '../utils/helpers';
 import { decode } from 'he';
 
 import { FaPause, FaPlay } from 'react-icons/fa';
+import { MdRepeat, MdOutlineRepeatOne } from 'react-icons/md';
 
 const ContentPlayer = _ => {
 	const { selectedList, selectSong } = useContext(ContentViewerContext);
 	const [ player, setPlayer ] = useState({ 
 		status: 'empty',
+		repeat: 'none',
 		playerHandler: null,
 		currentTime: 0,
 		currentTimeIntervalHandle: null,
@@ -155,6 +157,13 @@ const ContentPlayer = _ => {
 	};
 
 	const onSongEnd = (event) => {
+		console.log('repeat:', player.repeat);
+		if(player.repeat === 'none') return; 
+		if(player.repeat === 'song') {
+			player.playerHandler.seekTo(0);
+			return;
+		}
+
 		let currentSongIndex = selectedList.entries.findIndex((song) => {
 			return song === selectedList.selectedSong; 
 		})
@@ -184,34 +193,45 @@ const ContentPlayer = _ => {
 		}
 		setPlayer((currPlayer) => ({ ...currPlayer, status }));
 	}
-
+	
   return (
     <div 
 			className='
 				w-full h-10 
 			bg-white text-black 
-				flex justify-between items-center 
+				flex justify-between items-center
 				px-3 relative' 	
 		>
-			<div className='hover:cursor-pointer'>
-				{
-					player.status === 'playing' ?
-						<FaPause onClick={ () => { 
-							player.playerHandler.pauseVideo();
-						}} /> :
-						<FaPlay onClick={ () => {
-							player.playerHandler.playVideo();
-						}} /> 
-				}
+			<div id='player-controls' className='flex'>
+				<div className='hover:cursor-pointer pr-2'>
+					{
+						player.status === 'playing' ?
+							<FaPause onClick={ () => { 
+								player.playerHandler.pauseVideo();
+							}} /> :
+							<FaPlay onClick={ () => {
+								player.playerHandler.playVideo();
+							}} /> 
+					}
+				</div>
+				<div className='hover:cursor-pointer'>
+					{
+						player.repeat === 'none' ?
+							<MdRepeat onClick={ () => setPlayer({ ...player, repeat: 'song' }) } /> :
+							player.repeat === 'song' ?
+								<MdRepeat className='text-blue-600' onClick={ () => setPlayer({ ...player, repeat: 'playlist' }) } /> :
+								<MdOutlineRepeatOne className='text-blue-600' onClick={ () => setPlayer({ ...player, repeat: 'none' }) } />
+					}
+				</div>
 			</div>
 
-			<div className='flex w-2/3'>
+			<div className='flex'>
 				<p className='p-2'>{ formatSecondsToTime(player.currentTime) }</p>
 				<input 
 					type='range' 
 					name='player-progress-bar' 
 					id='player-progress-bar' 
-					className='w-full'
+					className='w-[300px]'
 					value={ player.progressBar }
 					onMouseDown={ handleProgressBarMouseDown }
 					onMouseUp={ handleProgressBarMouseUp } 
