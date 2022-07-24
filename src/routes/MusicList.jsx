@@ -11,18 +11,17 @@ import { FaTrash } from 'react-icons/fa';
 
 const MusicList = () => {
   const { selectedList, selectSong, searchContent, error : searchError } = useContext(ContentViewerContext);
-  const [ searchParams, setSearchParams ] = useSearchParams();
-  const lastEntry = useRef();
+  const [ searchParams ] = useSearchParams();
   const [ loadMore, setLoadMore ] = useState(false);
 
   const handleSelect = (resourceId) => {
-    const resource = selectedList.entries.find((item) => {
+    const selectedResourceIndex = selectedList.entries.findIndex((item, index) => {
       const id = getResourceId(item);
-      
       return id === resourceId;
     })   
-
-    selectSong(resource);
+    console.log(selectedResourceIndex);
+    if(selectedResourceIndex >= selectedList.entries.length - 5) setLoadMore(true);
+    selectSong(selectedList.entries[selectedResourceIndex]);
   };
 
   useEffect(() => {
@@ -35,6 +34,7 @@ const MusicList = () => {
         searchParams.get('search'), 
         { append: true, page: selectedList.pageInfo.nextPageToken }
       );
+    setLoadMore(false);
   }, [loadMore]);
   
   if(searchError) return (
@@ -58,13 +58,6 @@ const MusicList = () => {
           selectedList.entries.length !== 0 && (
             <div 
               className={ `${ selectedList.selectedSong ? 'h-[75vh]' : 'h-[80vh]' } overflow-scroll pr-3` }
-              onScroll={ () => { 
-                if(!loadMore && isInViewport(lastEntry.current)) {
-                  setLoadMore(true);
-                } else if(loadMore && !isInViewport(lastEntry.current)) {
-                  setLoadMore(false);
-                }
-              } }
             >
               { 
                 selectedList.entries.map((item, index) => {
@@ -73,19 +66,13 @@ const MusicList = () => {
                     getResourceId(selectedList.selectedSong) : 
                     null;
 
-                  const element = <MusicEntry 
+                  return <MusicEntry 
                       index={ index }
                       resource={ item } 
                       resourceOrigin={ selectedList.entriesType } 
                       selected={ (id === selectedSongId) }
                       onSelect={ handleSelect }
-                    />
-
-                  return ( 
-                    index === selectedList.entries.length - 1 ? 
-                      <div key={ id } ref={ lastEntry }>{ element }</div> :
-                      <div key={ id }>{ element }</div>
-                  );
+                    />;
                 }) 
               }
             </div>

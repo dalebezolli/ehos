@@ -37,7 +37,7 @@ function ContentViewerProvider({ children }) {
        response = await (
         (queryType === 'search' ) ? 
           searchData(query, opts) : 
-          searchPlaylist(query.slice(query.indexOf('=') + 1))
+          searchPlaylist(query.slice(query.indexOf('=') + 1), opts)
       );   
       setError(null);
     } catch(e) {
