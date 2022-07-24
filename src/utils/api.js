@@ -16,7 +16,7 @@ const generateError = (error) => {
 }
 
 export const searchData = async (query, opts) => {
-	let size = opts && opts.size ? opts.size || 25 : 25;
+	let size = opts && opts.size ? opts.size || 50 : 50;
 	let page = opts && opts.page ? opts.page || null : null;
 
 	const data = await fetch(
@@ -36,8 +36,8 @@ export const searchData = async (query, opts) => {
 };
 
 export const searchPlaylist = async (playlistId, opts) => {
-	let size = opts && opts.size ? opts.size || 25 : 25;
-	let page = opts && opts.page ? opts.page || 25 : null;
+	let size = opts && opts.size ? opts.size || 50 : 50;
+	let page = opts && opts.page ? opts.page || null : null;
 
 	const data = await fetch(
 		YOUTUBE_API_URL + 
