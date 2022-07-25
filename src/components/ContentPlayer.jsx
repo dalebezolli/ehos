@@ -6,7 +6,7 @@ import { getResourceId, formatSecondsToTime } from '../utils/helpers';
 import { decode } from 'he';
 
 import { FaPause, FaPlay } from 'react-icons/fa';
-import { MdRepeat, MdOutlineRepeatOne } from 'react-icons/md';
+import { MdRepeat, MdOutlineRepeatOne, MdSkipNext, MdSkipPrevious } from 'react-icons/md';
 
 const ContentPlayer = _ => {
 	const { selectedList, selectSong } = useContext(ContentViewerContext);
@@ -88,6 +88,29 @@ const ContentPlayer = _ => {
 		}))
 	}
 
+	const handlePlayPrevSong = () => {
+		let currentSongIndex = selectedList.entries.findIndex((song) => {
+			return song === selectedList.selectedSong; 
+		})
+
+		if(currentSongIndex === 0) return;
+
+		let nextSong = selectedList.entries[currentSongIndex - 1];
+		selectSong(nextSong);
+	}
+
+	const handlePlayNextSong = () => {
+		let currentSongIndex = selectedList.entries.findIndex((song) => {
+			return song === selectedList.selectedSong; 
+		})
+
+		console.log(currentSongIndex, selectedList.entries.length);
+		if(currentSongIndex >= selectedList.entries.length - 1) return;
+
+		let nextSong = selectedList.entries[currentSongIndex + 1];
+		selectSong(nextSong);
+	}
+
 	const handleProgressBarMouseMove = (event) => {
 		if(event.buttons === 1) {
 			setPlayer((currPlayer) => ({ 
@@ -164,11 +187,7 @@ const ContentPlayer = _ => {
 			return;
 		}
 
-		let currentSongIndex = selectedList.entries.findIndex((song) => {
-			return song === selectedList.selectedSong; 
-		})
-		let nextSong = selectedList.entries[currentSongIndex + 1];
-		selectSong(nextSong);
+		handlePlayNextSong();
 	}
 
 	const onPlayerStateChange = (event) => {
@@ -204,6 +223,9 @@ const ContentPlayer = _ => {
 		>
 			<div id='player-controls' className='flex'>
 				<div className='hover:cursor-pointer pr-2'>
+					<MdSkipPrevious onClick={ handlePlayPrevSong } />
+				</div>
+				<div className='hover:cursor-pointer pr-2'>
 					{
 						player.status === 'playing' ?
 							<FaPause onClick={ () => { 
@@ -213,6 +235,9 @@ const ContentPlayer = _ => {
 								player.playerHandler.playVideo();
 							}} /> 
 					}
+				</div>
+				<div className='hover:cursor-pointer pr-2'>
+					<MdSkipNext onClick={ handlePlayNextSong } />
 				</div>
 				<div className='hover:cursor-pointer'>
 					{

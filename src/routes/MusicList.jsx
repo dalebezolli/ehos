@@ -19,14 +19,22 @@ const MusicList = () => {
       const id = getResourceId(item);
       return id === resourceId;
     })   
-    console.log(selectedResourceIndex);
-    if(selectedResourceIndex >= selectedList.entries.length - 5) setLoadMore(true);
+
     selectSong(selectedList.entries[selectedResourceIndex]);
   };
 
   useEffect(() => {
     searchContent(searchParams.get('search'));
   }, [searchParams.get('search')]);
+
+  useEffect (() => {
+    const selectedResourceIndex = selectedList.entries.findIndex((item, index) => {
+      const id = getResourceId(item);
+      return id === getResourceId(selectedList.selectedSong);
+    })   
+
+    if(selectedResourceIndex >= selectedList.entries.length - 5) setLoadMore(true);
+  }, [selectedList.selectedSong]);
 
   useEffect(() => {
     if(loadMore) 
