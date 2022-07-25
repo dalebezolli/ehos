@@ -5,7 +5,7 @@ import { ContentViewerContext } from '../context/ContentViewerContext';
 import { getResourceId, formatSecondsToTime } from '../utils/helpers';
 import { decode } from 'he';
 
-import { FaPause, FaPlay } from 'react-icons/fa';
+import { FaPause, FaPlay, FaVolumeMute, FaVolumeDown, FaVolumeUp } from 'react-icons/fa';
 import { MdRepeat, MdOutlineRepeatOne, MdSkipNext, MdSkipPrevious } from 'react-icons/md';
 
 const ContentPlayer = _ => {
@@ -19,7 +19,9 @@ const ContentPlayer = _ => {
 		progressBar: 0,
 		progressBarIntervalHandle: null,
 		duration: 0,
+		volume: 50,
 		showYtIframe: false,
+		showVolumeControl: false,
 	});
 	
 	useEffect(_ => {
@@ -27,6 +29,7 @@ const ContentPlayer = _ => {
 		if(player.status === 'playing') {
 			let timeInterval = player.currentTimeIntervalHandle;
 			let progressBarInterval = player.progressBarIntervalHandle;
+			player.playerHandler.setVolume(player.volume);
 
 			console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'playing', timeInterval, progressBarInterval);
 			if(timeInterval === null) {
@@ -73,6 +76,10 @@ const ContentPlayer = _ => {
 		}
 
 	}, [player.status]);
+
+	useEffect(() => {
+		if(player.playerHandler) player.playerHandler.setVolume(player.volume);
+	}, [player.volume]);
 
 	const updatePlayerTimeDisplay = (currentTime) => {
 		setPlayer((currPlayer) => ({
@@ -264,6 +271,32 @@ const ContentPlayer = _ => {
 					onChange={ (event) => { setPlayer({...player, progressBar: event.target.value}) } }
 				/>
 				<p className='p-2'>{ formatSecondsToTime(player.duration) }</p>
+			</div>
+
+			<div className='relative overflow-visible' 
+				onMouseEnter={ () => { setPlayer({ ...player, showVolumeControl: true }) } } 
+				onMouseLeave={ () => { setPlayer({ ...player, showVolumeControl: false }) } }
+			>
+				<div className={ `
+					absolute 
+					w-6 h-32 bottom-4 -left-1 
+					bg-slate-500
+					${ player.showVolumeControl ? '' : 'hidden' }
+				`}>
+					<input 
+						type='range' 
+						className='absolute -rotate-90 w-[100px] bottom-[40%] -left-[38px]' 
+						value={ player.volume }
+						onChange={ (event) => { setPlayer({ ...player, volume: event.target.value }) } }
+					/>
+				</div>
+				{
+					player.volume < 1 ? 
+						<FaVolumeMute /> :
+						player.volume <= 50 ?
+							<FaVolumeDown /> :
+							<FaVolumeUp />
+				}
 			</div>
 
 			{
