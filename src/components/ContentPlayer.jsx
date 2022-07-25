@@ -244,8 +244,8 @@ const ContentPlayer = _ => {
 						player.repeat === 'none' ?
 							<MdRepeat onClick={ () => setPlayer({ ...player, repeat: 'song' }) } /> :
 							player.repeat === 'song' ?
-								<MdRepeat className='text-blue-600' onClick={ () => setPlayer({ ...player, repeat: 'playlist' }) } /> :
-								<MdOutlineRepeatOne className='text-blue-600' onClick={ () => setPlayer({ ...player, repeat: 'none' }) } />
+								<MdOutlineRepeatOne className='text-blue-600' onClick={ () => setPlayer({ ...player, repeat: 'playlist' }) } /> :
+								<MdRepeat className='text-blue-600' onClick={ () => setPlayer({ ...player, repeat: 'none' }) } />
 					}
 				</div>
 			</div>
