@@ -1,5 +1,5 @@
 import YouTube from 'react-youtube';
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useCallback } from 'react';
 import { ContentViewerContext } from '../context/ContentViewerContext';
 
 import { getResourceId, formatSecondsToTime } from '../utils/helpers';
@@ -22,6 +22,14 @@ const ContentPlayer = _ => {
 		volume: 50,
 		showYtIframe: false,
 		showVolumeControl: false,
+	});
+	
+	useEffect(() => {
+		document.addEventListener('keydown', handlePlayerShortcuts);	
+
+		return () => {
+			document.removeEventListener('keydown', handlePlayerShortcuts);
+		}
 	});
 	
 	useEffect(_ => {
@@ -93,6 +101,38 @@ const ContentPlayer = _ => {
 			...currPlayer,
 			progressBar: (currentTime / duration) * 100
 		}))
+	}
+
+	const handlePlayerShortcuts = (event) => {
+		console.log(`Key Pressed: ${event.key} ${event.keyCode}`);
+		if(event.key === ' ' || event.key.toLowerCase() === 'k') {
+			if(player.status === 'playing') {
+				player.playerHandler.pauseVideo();
+			} else if(player.status === 'paused') {
+				player.playerHandler.playVideo();
+			}
+		}
+
+		if(event.key === 'ArrowRight' || event.key.toLowerCase() === 'l') {
+			player.playerHandler.seekTo(player.currentTime + 10);
+		}
+
+		if(event.key === 'ArrowLeft' || event.key.toLowerCase() === 'j') {
+			player.playerHandler.seekTo(player.currentTime - 10);
+		}
+
+		if(event.key.toLowerCase() === 'i') {
+			setPlayer({ ...player, showYtIframe: !player.showYtIframe });
+		}
+
+		if(event.key.toLowerCase() === 'm') {
+			handlePlayNextSong();
+		}
+		
+		if(event.key.toLowerCase() === 'n') {
+			handlePlayPrevSong();
+		}
+		
 	}
 
 	const handlePlayPrevSong = () => {
