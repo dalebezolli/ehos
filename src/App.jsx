@@ -5,22 +5,27 @@ import PageLayout from './routes/PageLayout';
 import Home from './routes/Home';
 import MusicList from './routes/MusicList';
 import NoRoute from './routes/NoRoute';
+import Login from './routes/Login';
+import AuthProvider, { AuthRoute, useAuth } from './context/AuthContext';
 
 function App() {
   return(
-    <ContentViewerProvider>
-      <BrowserRouter>
-      	<Routes>
+      <ContentViewerProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
 
-          <Route path='/' element={ <PageLayout /> }>
-            <Route path='/' element={ <Home /> } />
-            <Route path='list' element={ <MusicList /> } />
-            <Route path='*' element={ <NoRoute /> } />
-          </Route>
+              <Route path='/' element={ <PageLayout /> }>
+                <Route path='/' element={ <Home /> } />
+                <Route path='list' element={ <AuthRoute><MusicList /></AuthRoute> } />
+                <Route path='login' element={ <Login /> } />
+                <Route path='*' element={ <NoRoute /> } />
+              </Route>
 
-        </Routes>
-      </BrowserRouter>
-    </ContentViewerProvider>
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </ContentViewerProvider>
   );
 }
 
