@@ -26,6 +26,7 @@ function ContentViewerProvider({ children }) {
 
   const searchContent = async (query, opts) => {
 	  let append = opts && opts.append ? opts.append || false : false;
+	  let save = opts?.save !== undefined ? opts?.save : true ;
 
     let queryType = 'search';
     if(query.includes('/playlist?list=')) {
@@ -45,10 +46,14 @@ function ContentViewerProvider({ children }) {
       return;
     }
 
-    const parsedResponse = parseResponse(response, append);
+    const parsedResponse = parseResponse(response, (save ? append : false));
     parsedResponse.entriesType = queryType;
+    console.log(`Response${ opts?.page ? ` ${opts.page}` : '' }:`, parsedResponse);
 
-    setSelectedList(parsedResponse);
+    if(save) {
+      setSelectedList(parsedResponse);
+    }
+    return parsedResponse;
   };
 
   const selectSong = (selectedSong) => {

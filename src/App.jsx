@@ -6,7 +6,7 @@ import Home from './routes/Home';
 import MusicList from './routes/MusicList';
 import NoRoute from './routes/NoRoute';
 import Login from './routes/Login';
-import AuthProvider, { AuthRoute, useAuth } from './context/AuthContext';
+import AuthProvider, { AuthRoute } from './context/AuthContext';
 
 function App() {
   return(

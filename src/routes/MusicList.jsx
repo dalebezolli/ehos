@@ -1,15 +1,18 @@
-import { useEffect, useContext, useRef, useState } from 'react';
+import { useEffect, useContext, useRef, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { ContentViewerContext } from '../context/ContentViewerContext';
+import { useAuth } from '../context/AuthContext';
 
-import { getResourceId, isInViewport } from '../utils/helpers';
+import { getResourceId, convertYoutubeEntryToEhosEntry } from '../utils/helpers';
+import { addSong, addSongs } from '../utils/firebase';
 import { decode } from 'he';
 
 import { FiPlus } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa';
 
 const MusicList = () => {
+  const { user } = useAuth();
   const { selectedList, selectSong, searchContent, error : searchError } = useContext(ContentViewerContext);
   const [ searchParams ] = useSearchParams();
   const [ loadMore, setLoadMore ] = useState(false);
@@ -22,6 +25,41 @@ const MusicList = () => {
 
     selectSong(selectedList.entries[selectedResourceIndex]);
   };
+
+  const handleSavePlaylist = useCallback( async _ => {
+    const getPlaylist = async _ => {
+      let i = 0;
+      let currItem = { ...selectedList };
+      let list = [ ...selectedList.entries ];
+
+      while(currItem.pageInfo.nextPageToken && i < 60) {
+        
+        console.log('search content...', i);
+        if(i > 20) {
+          console.log('reached max search');
+        } else {
+          currItem = await searchContent(
+            searchParams.get('search'), 
+            { append: true, page: currItem.pageInfo.nextPageToken, save: false }
+          );
+          list = [ ...list, ...currItem.entries ];
+        }
+        i++;
+      }
+      
+      return list;
+    };
+    const list = await getPlaylist();
+    console.log(list);
+
+    addSongs(
+      list.map(song => convertYoutubeEntryToEhosEntry(song)),
+      user.uid, 
+      (song) => { console.log(`Saved ${ song.title }`) },
+      (song) => { console.log(`Exists ${ song.title }`) }
+    ) 
+
+  }, [selectedList.pageInfo]);
 
   useEffect(() => {
     searchContent(searchParams.get('search'));
@@ -55,12 +93,15 @@ const MusicList = () => {
     <div className='flex'>
 
       <div className={ selectedList.selectedSong ? 'w-1/2' : 'w-full' }>
-        <h2 className='font-bold text-xl mb-4'>
-          Songs 
-          <span className='font-normal text-base'>
-            &nbsp;- { selectedList.entries.length } songs
-          </span>
-        </h2>
+        <div className='flex'>
+          <h2 className='font-bold text-xl mb-4 mr-2'>
+            Songs 
+            <span className='font-normal text-base'>
+              &nbsp;- { selectedList.entries.length + (selectedList.entriesType === 'searchPlaylist' ? ' / ' + selectedList.pageInfo.totalResults : '') } songs
+            </span>
+          </h2>
+          <button onClick={ handleSavePlaylist }><FiPlus /></button>
+        </div>
 
         {
           selectedList.entries.length !== 0 && (
@@ -75,6 +116,7 @@ const MusicList = () => {
                     null;
 
                   return <MusicEntry 
+                  		key={ id }
                       index={ index }
                       resource={ item } 
                       resourceOrigin={ selectedList.entriesType } 
@@ -110,7 +152,9 @@ const MusicList = () => {
   );
 }
 
-const MusicEntry = ({index ,resource, resourceOrigin, selected, onSelect }) => {
+const MusicEntry = ({index, resource, resourceOrigin, selected, onSelect }) => {
+  const { user } = useAuth();
+
   const controls = (resourceOrigin === 'search' ? (
     <FiPlus />
   ) : (
@@ -131,7 +175,7 @@ const MusicEntry = ({index ,resource, resourceOrigin, selected, onSelect }) => {
         <p>{ index + 1 }. { decode(resource.snippet.title) }</p>
       </div>
 
-      <div>
+      <div onClickCapture={ (event) => { event.stopPropagation(); addSong(convertYoutubeEntryToEhosEntry(resource), user.uid) } }>
         { controls }
       </div>
     </div>

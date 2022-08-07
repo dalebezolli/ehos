@@ -9,6 +9,25 @@ export const getResourceId = (resource) => {
   return id;
 }
 
+export const convertYoutubeEntryToEhosEntry = (ytSongEntry) => {
+	if(ytSongEntry.snippet.title === 'Deleted video' || ytSongEntry.snippet.title === 'Private video') return;
+	console.log('Converting:', ytSongEntry.snippet.title);
+
+	// TODO: Parse Title & Author for better readability
+
+	// TODO: Get song's length
+	const data = {
+		title: ytSongEntry.snippet.title,
+		author: ytSongEntry.snippet.videoOwnerChannelTitle || ytSongEntry.snippet.channelTitle,
+		length: 0,
+		youtubeId: getResourceId(ytSongEntry),
+		tags: [],
+		thumbnail: ytSongEntry.snippet.thumbnails.high?.url || ytSongEntry.snippet.thumbnails.medium?.url || ytSongEntry.snippet.thumbnails.default.url,
+	}
+
+	return data;
+}
+
 export const formatSecondsToTime = (time) => {
 	time = Math.round(time);
 	let minutes = Math.floor(time / 60);
