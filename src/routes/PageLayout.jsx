@@ -4,16 +4,21 @@ import { ContentViewerContext } from '../context/ContentViewerContext';
 
 import ContentPlayer from '../components/ContentPlayer';
 import NavBar from '../components/NavBar';
+import SideNav from '../components/SideNav';
 
 const PageLayout = _ => {
 	const { selectedList } = useContext(ContentViewerContext);
 
 	return (
-		<div className='relative h-screen'>
+		<div className='relative'>
 			<NavBar />
 
-			<div className='container mx-auto pt-3'>
-				<Outlet />
+			<div className='flex h-[90vh]'>
+				<SideNav />
+
+				<div className='container mx-auto pt-3'>
+					<Outlet />
+				</div>
 			</div>
 			
 			{

@@ -30,26 +30,34 @@ const SearchBar = _ => {
   };
 
   return (
-    <div className='h-min'>
-      <form method='get'>
-        <input 
-          type='text' 
-          name='content-search' 
-          id='content-search' 
-          placeholder='Search'
-          ref={ contentSearchInput }
-          onKeyUp={ handleKeyUp }
-          className='bg-black text-white w-[400px] border border-black border-b-white'
-        />
+    <form 
+      method='get' 
+      className='
+        flex p-2 bg-dark-secondary 
+      focus-within:bg-input-focus rounded-3xl 
+        transition-all'
+    >
+      <button 
+        className='pl-2 pr-4 text-light-secondary hover:text-light transition-colors' 
+        onClick={ handleClick }
+      >
+        <FaSearch />
+      </button>
 
-        <button 
-          className='px-2 hover:text-pink-600' 
-          onClick={ handleClick }
-        >
-          <FaSearch />
-        </button>
-      </form>
-    </div>
+      <input 
+        type='text' 
+        name='content-search' 
+        id='content-search' 
+        placeholder='Search'
+        ref={ contentSearchInput }
+        onKeyUp={ handleKeyUp }
+        className='
+          bg-inherit 
+          text-light placeholder-light-secondary 
+          w-[400px] outline-none
+          transition-all'
+      />
+    </form>
   );
 }
 

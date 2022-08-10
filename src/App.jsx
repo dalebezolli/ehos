@@ -3,7 +3,7 @@ import ContentViewerProvider from './context/ContentViewerContext';
 import PageLayout from './routes/PageLayout';
 
 import Home from './routes/Home';
-import MusicList from './routes/MusicList';
+import MusicList from './components/MusicList';
 import NoRoute from './routes/NoRoute';
 import Login from './routes/Login';
 import AuthProvider, { AuthRoute } from './context/AuthContext';

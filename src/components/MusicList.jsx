@@ -66,6 +66,8 @@ const MusicList = () => {
   }, [searchParams.get('search')]);
 
   useEffect (() => {
+    if(!selectedList.selectedSong) return;
+
     const selectedResourceIndex = selectedList.entries.findIndex((item, index) => {
       const id = getResourceId(item);
       return id === getResourceId(selectedList.selectedSong);
