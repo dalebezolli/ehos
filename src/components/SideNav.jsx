@@ -25,7 +25,7 @@ const SideNav = _ => {
 	]
 
 	return (
-		<div className='bg-dark-secondary w-[300px]'>
+		<div className='bg-dark-secondary min-w-[250px]'>
 			{ 
 				links.map((link) => {
 					return <NavLink key={ link.name } {...link} />

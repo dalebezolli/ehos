@@ -16,7 +16,7 @@ const PageLayout = _ => {
 			<div className='flex h-[90vh]'>
 				<SideNav />
 
-				<div className='container mx-auto pt-3'>
+				<div className='overflow-x-scroll w-full'>
 					<Outlet />
 				</div>
 			</div>

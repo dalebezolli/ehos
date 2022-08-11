@@ -1,32 +1,32 @@
 import { useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { FaSearch } from 'react-icons/fa';
 
 const SearchBar = _ => {
   const contentSearchInput = useRef();
-
   const navigate = useNavigate();
-  const [ searchParams, setSearchParams ] = useSearchParams();
+
+  const search = (input) => {
+    if(!input) return;
+
+    const path = window.location.pathname.split('/');
+    if(path[path.length - 1] === input) return;
+    navigate(`/search/${ encodeURIComponent(input) }`);
+  }
 
   const handleKeyUp = (event) => {
     event.preventDefault();   
 
     if(event.keyCode !== 13) return;
     const input = contentSearchInput.current.value;
-    if(!input) return;
-
-    if(searchParams.get('serarch') === input) return;
-    navigate(`/list?search=${ encodeURIComponent(input) }`);
+    search(input);
   }
 
   const handleClick = (event) => {
     event.preventDefault();   
     const input = contentSearchInput.current.value;
-    if(!input) return;
-
-    if(searchParams.get('serarch') === input) return;
-    navigate(`/list?search=${ encodeURIComponent(input) }`);
+    search(input);
   };
 
   return (

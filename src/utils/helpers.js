@@ -11,7 +11,6 @@ export const getResourceId = (resource) => {
 
 export const convertYoutubeEntryToEhosEntry = (ytSongEntry) => {
 	if(ytSongEntry.snippet.title === 'Deleted video' || ytSongEntry.snippet.title === 'Private video') return;
-	console.log('Converting:', ytSongEntry.snippet.title);
 
 	// TODO: Parse Title & Author for better readability
 
