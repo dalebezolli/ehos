@@ -1,19 +1,19 @@
 import { Outlet } from 'react-router-dom';
-import { useContext } from 'react';
-import { ContentViewerContext } from '../context/ContentViewerContext';
+import { usePlayer } from '../context/ContentViewerContext';
 
 import ContentPlayer from '../components/ContentPlayer';
 import NavBar from '../components/NavBar';
 import SideNav from '../components/SideNav';
 
 const PageLayout = _ => {
-	const { selectedList } = useContext(ContentViewerContext);
+	const { queue } = usePlayer();
+	const { playingTrackIndex } = queue;
 
 	return (
-		<div className='relative'>
+		<div className=''>
 			<NavBar />
 
-			<div className='flex h-[90vh]'>
+			<div className={`flex ${ playingTrackIndex !== -1 ? 'h-[80vh]' : 'h-[90vh]' }`}>
 				<SideNav />
 
 				<div className='overflow-x-scroll w-full'>
@@ -21,12 +21,7 @@ const PageLayout = _ => {
 				</div>
 			</div>
 			
-			{
-				selectedList.selectedSong &&
-				<div className='absolute bottom-0 left-1/2 -translate-x-1/2 container'>
-					<ContentPlayer />
-				</div>
-			}
+			{ playingTrackIndex !== -1 && <ContentPlayer /> }
 		</div>
 	);
 };

@@ -3,13 +3,14 @@ import { useState, useContext, useEffect, useCallback } from 'react';
 import { ContentViewerContext } from '../context/ContentViewerContext';
 
 import { getResourceId, formatSecondsToTime } from '../utils/helpers';
-import { decode } from 'he';
 
 import { FaPause, FaPlay, FaVolumeMute, FaVolumeDown, FaVolumeUp } from 'react-icons/fa';
 import { MdRepeat, MdOutlineRepeatOne, MdSkipNext, MdSkipPrevious } from 'react-icons/md';
 
 const ContentPlayer = _ => {
-	const { selectedList, selectSong } = useContext(ContentViewerContext);
+	const { selectedList, queue, playPrevTrack, playNextTrack } = useContext(ContentViewerContext);
+	const { playingTrackIndex, queuedTracks } = queue;
+
 	const [ player, setPlayer ] = useState({ 
 		status: 'empty',
 		repeat: 'none',
@@ -33,19 +34,19 @@ const ContentPlayer = _ => {
 	});
 	
 	useEffect(_ => {
-		console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'status:', player.status, player.playerHandler && player.playerHandler.getPlayerState());
+		console.log(queuedTracks[playingTrackIndex]?.youtubeId, 'status:', player.status, player.playerHandler && player.playerHandler.getPlayerState());
 		if(player.status === 'playing') {
 			let timeInterval = player.currentTimeIntervalHandle;
 			let progressBarInterval = player.progressBarIntervalHandle;
 			player.playerHandler.setVolume(player.volume);
 
-			console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'playing', timeInterval, progressBarInterval);
+			console.log(queuedTracks[playingTrackIndex]?.youtubeId, 'playing', timeInterval, progressBarInterval);
 			if(timeInterval === null) {
 				timeInterval = setInterval(() => { 
 					updatePlayerTimeDisplay(player.playerHandler.getCurrentTime());
 				}, 200);
 
-				console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'timeInterval:', timeInterval);
+				console.log(queuedTracks[playingTrackIndex]?.youtubeId, 'timeInterval:', timeInterval);
 			}
 		
 			if(progressBarInterval === null) {
@@ -53,7 +54,7 @@ const ContentPlayer = _ => {
 					updatePlayerProgressBar(player.playerHandler.getCurrentTime(), player.playerHandler.getDuration()); 
 				}, 200);
 
-				console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'progressBarInterval:', progressBarInterval);
+				console.log(queuedTracks[playingTrackIndex]?.youtubeId, 'progressBarInterval:', progressBarInterval);
 			}
 
 			setPlayer({ 
@@ -68,15 +69,15 @@ const ContentPlayer = _ => {
 			let currentTimeIntervalHandle = player.currentTimeIntervalHandle;
 			let progressBarIntervalHandle = player.progressBarIntervalHandle;
 
-			console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'cleanup...', player.currentTimeIntervalHandle, player.progressBarIntervalHandle);
+			console.log(queuedTracks[playingTrackIndex]?.youtubeId, 'cleanup...', player.currentTimeIntervalHandle, player.progressBarIntervalHandle);
 			if(player.currentTimeIntervalHandle !== null) {
-				console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'cleanup timeInterval:', currentTimeIntervalHandle);
+				console.log(queuedTracks[playingTrackIndex]?.youtubeId, 'cleanup timeInterval:', currentTimeIntervalHandle);
 				clearInterval(player.currentTimeIntervalHandle);
 				currentTimeIntervalHandle = null;
 			}
 
 			if(player.progressBarIntervalHandle !== null) {
-				console.log((selectedList.selectedSong) && getResourceId(selectedList.selectedSong), 'cleanup progressBarInterval:', progressBarIntervalHandle);
+				console.log(queuedTracks[playingTrackIndex]?.youtubeId, 'cleanup progressBarInterval:', progressBarIntervalHandle);
 				clearInterval(player.progressBarIntervalHandle);
 				progressBarIntervalHandle = null;
 			}
@@ -104,7 +105,6 @@ const ContentPlayer = _ => {
 	}
 
 	const handlePlayerShortcuts = (event) => {
-		console.log(`Key Pressed: ${event.key} ${event.keyCode}`);
 		if(event.key === ' ' || event.key.toLowerCase() === 'k') {
 			if(player.status === 'playing') {
 				player.playerHandler.pauseVideo();
@@ -126,36 +126,13 @@ const ContentPlayer = _ => {
 		}
 
 		if(event.key.toLowerCase() === 'm') {
-			handlePlayNextSong();
+			playNextTrack();
 		}
 		
 		if(event.key.toLowerCase() === 'n') {
-			handlePlayPrevSong();
+			playPrevTrack();
 		}
 		
-	}
-
-	const handlePlayPrevSong = () => {
-		let currentSongIndex = selectedList.entries.findIndex((song) => {
-			return song === selectedList.selectedSong; 
-		})
-
-		if(currentSongIndex === 0) return;
-
-		let nextSong = selectedList.entries[currentSongIndex - 1];
-		selectSong(nextSong);
-	}
-
-	const handlePlayNextSong = () => {
-		let currentSongIndex = selectedList.entries.findIndex((song) => {
-			return song === selectedList.selectedSong; 
-		})
-
-		console.log(currentSongIndex, selectedList.entries.length);
-		if(currentSongIndex >= selectedList.entries.length - 1) return;
-
-		let nextSong = selectedList.entries[currentSongIndex + 1];
-		selectSong(nextSong);
 	}
 
 	const handleProgressBarMouseMove = (event) => {
@@ -263,14 +240,17 @@ const ContentPlayer = _ => {
   return (
     <div 
 			className='
-				w-full h-10 
-			bg-white text-black 
+				w-full h-[10vh]
+			bg-dark-secondary text-light
 				flex justify-between items-center
 				px-3 relative' 	
 		>
 			<div id='player-controls' className='flex'>
 				<div className='hover:cursor-pointer pr-2'>
-					<MdSkipPrevious onClick={ handlePlayPrevSong } />
+					<MdSkipPrevious 
+					 	className={``}
+						onClick={ playPrevTrack } 
+					/>
 				</div>
 				<div className='hover:cursor-pointer pr-2'>
 					{
@@ -284,7 +264,7 @@ const ContentPlayer = _ => {
 					}
 				</div>
 				<div className='hover:cursor-pointer pr-2'>
-					<MdSkipNext onClick={ handlePlayNextSong } />
+					<MdSkipNext onClick={ playNextTrack } />
 				</div>
 				<div className='hover:cursor-pointer'>
 					{
@@ -340,31 +320,31 @@ const ContentPlayer = _ => {
 			</div>
 
 			{
-				selectedList.selectedSong &&
+				playingTrackIndex !== -1 &&
 				<div 
 					className='flex hover:cursor-pointer' 
 					onClick={ 
 						() => setPlayer({ ...player, showYtIframe: !player.showYtIframe })
 					}
 				>
-					<img 
-						src={ selectedList.selectedSong.snippet.thumbnails.high.url } 
-						className='h-8 mr-8' 
-					/>
-
-					<div className='flex flex-col text-xs'>
-						<p>{ decode(selectedList.selectedSong.snippet.title) }</p>
-						<p>{ decode(selectedList.selectedSong.snippet.channelTitle) }</p>
+					<div className='text-xs text-right'>
+						<p>{ queuedTracks[playingTrackIndex].title }</p>
+						<p>{ queuedTracks[playingTrackIndex].author }</p>
 					</div>
+
+					<div 
+						style={{ backgroundImage: `url(${ queuedTracks[playingTrackIndex].thumbnail })` }} 
+						className='ml-2 h-8 w-8 bg-[length:190%] bg-center bg-no-repeat rounded-md' 
+					></div>
 				</div>
 			}
 			
 			{
-				selectedList.selectedSong &&
+				playingTrackIndex !== -1 &&
 				<YouTube 
-					videoId={ getResourceId(selectedList.selectedSong) } 
+					videoId={ queuedTracks[playingTrackIndex].youtubeId } 
 					opts={{ height: '390', width: '640', playerVars: { autoplay: 1 } }} 
-					className={`absolute right-0 bottom-10 ${ (player.showYtIframe) ? '' : 'hidden' }`}
+					className={`absolute right-0 bottom-20 ${ (player.showYtIframe) ? '' : 'hidden' }`}
 					onReady={ onPlayerReady }
 					onStateChange={ onPlayerStateChange }
 					onEnd={ onSongEnd }

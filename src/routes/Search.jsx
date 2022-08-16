@@ -12,7 +12,6 @@ const Search = _ => {
 
 	useEffect(() => {
 		const search = async (query, searchType) => {
-			console.log(query, searchType);
 			let response;
 			try {
 				response = await (
@@ -43,7 +42,16 @@ const Search = _ => {
 
 	return (
 		<div className='px-16 container'>
-			<TrackList tracks={ resultList } />
+			{
+				!error ?
+					<>
+						<div id='filters' className='my-6'>
+							<p>Filters</p>
+						</div>
+						<TrackList tracks={ resultList } />
+					</> :
+					<p>Oops, an error occured!</p>
+			}
 		</div>
 	);
 };

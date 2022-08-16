@@ -21,7 +21,10 @@ const Home = _ => {
 	return (
 		<div className='flex flex-col items-center'>
 			<h1 className='text-3xl font-bold mb-3'>Welcome to Ehos{ user && `, ${ user.displayName }` } </h1>
-			{
+					
+			<button onClick={ () => setList(list.insertFront('a')) }>Insert</button>
+
+			{/* {
 				!user ?
 					<p>Search to get started 🎶</p> : (
 						<div>
@@ -37,7 +40,7 @@ const Home = _ => {
 							}
 						</div>
 					)
-			}
+			} */}
 		</div>
 	);
 };

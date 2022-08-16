@@ -1,7 +1,7 @@
-import { searchData, searchPlaylist } from '../utils/api';
-import { createContext, useState } from 'react';
+import { createContext, useState, useContext } from 'react';
 
 export const ContentViewerContext = createContext();
+export const usePlayer = () => useContext(ContentViewerContext);
 
 function ContentViewerProvider({ children }) {
   const [ selectedList, setSelectedList ] = useState({
@@ -10,63 +10,68 @@ function ContentViewerProvider({ children }) {
     entriesType: 'video',
     pageInfo: {},
   });
+
   const [error, setError] = useState(null);
+  const [ queue, setQueue ] = useState({
+    playingTrackIndex: -1,
+    queuedTracks: [],
+  });
 
-  const parseResponse = (res, append) => {
-    const parsedResponse = {...selectedList};   
-    parsedResponse.entries = (!append) ? res.items : [...parsedResponse.entries, ...res.items];
-    parsedResponse.pageInfo = res.pageInfo;
-    if(parsedResponse.pageInfo) {
-      parsedResponse.pageInfo.nextPageToken = res.nextPageToken || null;
-      parsedResponse.pageInfo.prevPageToken = res.prevPageToken || null;
-    }
-
-    return parsedResponse;
+  // QUEUE CONTROLS
+  const playTrack = (track) => {
+    setQueue((prevQueue) => ({
+       playingTrackIndex: prevQueue.playingTrackIndex + 1,
+       queuedTracks: [...prevQueue.queuedTracks, track], 
+      }));
   };
 
-  const searchContent = async (query, opts) => {
-	  let append = opts && opts.append ? opts.append || false : false;
-	  let save = opts?.save !== undefined ? opts?.save : true ;
-
-    let queryType = 'search';
-    if(query.includes('/playlist?list=')) {
-      queryType = 'searchPlaylist';
-    };
-
-    let response;
-    try {
-       response = await (
-        (queryType === 'search' ) ? 
-          searchData(query, opts) : 
-          searchPlaylist(query.slice(query.indexOf('=') + 1), opts)
-      );   
-      setError(null);
-    } catch(e) {
-      setError(e);
-      return;
-    }
-
-    const parsedResponse = parseResponse(response, (save ? append : false));
-    parsedResponse.entriesType = queryType;
-    console.log(`Response${ opts?.page ? ` ${opts.page}` : '' }:`, parsedResponse);
-
-    if(save) {
-      setSelectedList(parsedResponse);
-    }
-    return parsedResponse;
+  const queueTrack = (track) => {
+    let playingTrackIndex = queue.playingTrackIndex;
+    setQueue((prevQueue) => ({ 
+      playingTrackIndex,
+      queuedTracks: [...prevQueue.queuedTracks, track]
+    }));
   };
 
-  const selectSong = (selectedSong) => {
-    setSelectedList({...selectedList, selectedSong});
+  const dequeueTrack = (trackId) => {
+    // TODO: Handle if last song or next doesnt exist
+    setQueue((prevQueue) => ({
+      ...prevQueue,
+      queuedTracks: prevQueue.queuedTracks.reduce((prev, curr, currIndex) => {
+        const tracks = currIndex !== trackId ? [...prev, curr] : prev;
+        return tracks;
+      }, [])
+    }));
+  };
+
+  const playPrevTrack = () => {
+    console.log('playing prev...');
+    if(queue.playingTrackIndex === 0) return;
+    console.log('prev.');
+
+    setQueue((prevQueue) => ({
+      ...prevQueue,
+      playingTrackIndex: prevQueue.playingTrackIndex - 1,
+    }))
   }
 
+  const playNextTrack = () => {
+    if(queue.queuedTracks.length - 1 === queue.playingTrackIndex) return;
+
+    setQueue((prevQueue) => ({
+      ...prevQueue,
+      playingTrackIndex: prevQueue.playingTrackIndex + 1,
+    }))
+  }
+
+  const value = { 
+    queue, 
+    playTrack, queueTrack, dequeueTrack, playPrevTrack, playNextTrack,
+    selectedList 
+  };
+
 	return (
-    <ContentViewerContext.Provider value={{
-      selectedList,
-      searchContent,
-      selectSong,
-      error,
-    }}>
+    <ContentViewerContext.Provider value={ value }>
       { children }
     </ContentViewerContext.Provider>
 	);
