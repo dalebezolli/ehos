@@ -21,6 +21,9 @@ module.exports = {
     extend: {
       fontFamily: {
         'sans': ['Inter', ...defaultTheme.fontFamily.sans]
+      },
+      fontSize: {
+        tiny: '0.5rem',
       }
     },
   },

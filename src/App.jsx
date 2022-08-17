@@ -8,23 +8,26 @@ import NoRoute from './routes/NoRoute';
 import Search from './routes/Search';
 import Login from './routes/Login';
 import AuthProvider, { AuthRoute } from './context/AuthContext';
+import TrackPopup from './components/TrackPopup';
 
 function App() {
   return(
       <ContentViewerProvider>
         <BrowserRouter>
           <AuthProvider>
-            <Routes>
+            <TrackPopup>
+              <Routes>
 
-              <Route path='/' element={ <PageLayout /> }>
-                <Route path='/' element={ <Home /> } />
-                <Route path='list' element={ <AuthRoute><MusicList /></AuthRoute> } />
-                <Route path='search/:searchQuery' element={ <Search /> } />
-                <Route path='login' element={ <Login /> } />
-                <Route path='*' element={ <NoRoute /> } />
-              </Route>
+                <Route path='/' element={ <PageLayout /> }>
+                  <Route path='/' element={ <Home /> } />
+                  <Route path='list' element={ <AuthRoute><MusicList /></AuthRoute> } />
+                  <Route path='search/:searchQuery' element={ <Search /> } />
+                  <Route path='login' element={ <Login /> } />
+                  <Route path='*' element={ <NoRoute /> } />
+                </Route>
 
-            </Routes>
+              </Routes>
+            </TrackPopup>
           </AuthProvider>
         </BrowserRouter>
       </ContentViewerProvider>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { query, where } from 'firebase/firestore';
-import { songsCollection, getSongs } from '../utils/firebase';
+import { getTracksFromCollection } from '../utils/firebase';
+import TrackList from '../components/TrackList';
+
 
 const Home = _ => {
 	const { user } = useAuth();
@@ -9,38 +10,50 @@ const Home = _ => {
 
 	useEffect(() => {
 		const getUserSavedSongs = async () => {
-			await getSongs(
-				query(songsCollection, where('userId', '==', user.uid)),
-				(songs) => { setSavedSongs(songs.docs.map(song => song.data())); }
+			await getTracksFromCollection(
+				user.uid,
+				(songs) => { 
+					setSavedSongs(songs.docs.map(song => song.data())); 
+				},
+				(err) => console.log(err)
 			);
 		}
 
 		getUserSavedSongs();
-	});
+	}, []);
+
+	const handleUpdateCollectionTrack = (track) => {
+		setSavedSongs((prevSavedSong) =>
+			prevSavedSong.map((currTrack) => 
+				(currTrack.youtubeId === track.youtubeId) ? track : currTrack
+			)
+		);
+	}
+
+	const handleDeleteCollectionTrack = (track) => {
+		setSavedSongs((prevSavedSong) => prevSavedSong.filter((currTrack) => currTrack.youtubeId !== track.youtubeId));
+	};
 
 	return (
-		<div className='flex flex-col items-center'>
+		<div className='flex flex-col px-16 container'>
 			<h1 className='text-3xl font-bold mb-3'>Welcome to Ehos{ user && `, ${ user.displayName }` } </h1>
 					
-			<button onClick={ () => setList(list.insertFront('a')) }>Insert</button>
-
-			{/* {
+			{
 				!user ?
 					<p>Search to get started 🎶</p> : (
 						<div>
 							<p>Saved Songs</p>
-							{ 
-								savedSongs.map(song =>
-									<div key={ song.youtubeId } className='flex justify-between w-screen'>
-										<p>{ song.title }</p>	
-										<p>{ song.author }</p>
-										<p>{ song.length }</p>
-									</div>
-								)
-							}
+							<TrackList 
+								tracks={ savedSongs } 
+								enabledControls={{ save: true, queue: true, delete: true }} 
+								controlHandlers={{ 
+									onSave: handleUpdateCollectionTrack,
+									onDelete: handleDeleteCollectionTrack 
+								}} 
+							/>
 						</div>
 					)
-			} */}
+			}
 		</div>
 	);
 };

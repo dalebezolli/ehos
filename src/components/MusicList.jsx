@@ -5,7 +5,7 @@ import { ContentViewerContext } from '../context/ContentViewerContext';
 import { useAuth } from '../context/AuthContext';
 
 import { getResourceId, convertYoutubeEntryToEhosEntry } from '../utils/helpers';
-import { addSong, addSongs } from '../utils/firebase';
+import { saveTrackToCollection } from '../utils/firebase';
 import { decode } from 'he';
 
 import { FiPlus } from 'react-icons/fi';
@@ -52,12 +52,12 @@ const MusicList = () => {
     const list = await getPlaylist();
     console.log(list);
 
-    addSongs(
-      list.map(song => convertYoutubeEntryToEhosEntry(song)),
-      user.uid, 
-      (song) => { console.log(`Saved ${ song.title }`) },
-      (song) => { console.log(`Exists ${ song.title }`) }
-    ) 
+    // addSongs(
+    //   list.map(song => convertYoutubeEntryToEhosEntry(song)),
+    //   user.uid, 
+    //   (song) => { console.log(`Saved ${ song.title }`) },
+    //   (song) => { console.log(`Exists ${ song.title }`) }
+    // ) 
 
   }, [selectedList.pageInfo]);
 
@@ -177,7 +177,7 @@ const MusicEntry = ({index, resource, resourceOrigin, selected, onSelect }) => {
         <p>{ index + 1 }. { decode(resource.snippet.title) }</p>
       </div>
 
-      <div onClickCapture={ (event) => { event.stopPropagation(); addSong(convertYoutubeEntryToEhosEntry(resource), user.uid) } }>
+      <div onClickCapture={ (event) => { event.stopPropagation(); saveTrackToCollection(convertYoutubeEntryToEhosEntry(resource), user.uid) } }>
         { controls }
       </div>
     </div>

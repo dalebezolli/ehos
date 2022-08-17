@@ -1,6 +1,10 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getFirestore, collection, addDoc, getDocs, Timestamp, query, where } from 'firebase/firestore';
+import { 
+  getFirestore, collection, 
+  Timestamp, doc, query, where,
+  addDoc, getDocs, deleteDoc, updateDoc,
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyB_na03U4uz9muOPgieFqtRkUEEng3b3l0',
@@ -11,11 +15,19 @@ const firebaseConfig = {
   appId: '1:401813384713:web:b0dbfa35e26ba2596492d8'
 };
 
+// const firebaseConfigDev = {
+//   apiKey: 'AIzaSyDyyIA78L4OSDJkG6bo1lX6AbXDJdsWmSw',
+//   authDomain: 'ehos-dev.firebaseapp.com',
+//   projectId: 'ehos-dev',
+//   messagingSenderId: '237592290212',
+//   appId: '1:237592290212:web:b103a4be58b3a235229731'
+// };
+
 const app = initializeApp(firebaseConfig);
 const provider = new GoogleAuthProvider();
 const auth = getAuth();
 const db = getFirestore(app);
-export const songsCollection = collection(db, 'saved-songs');
+export const trackCollection = collection(db, 'saved-songs');
 
 export const googleSignIn = async (callback) => {
   let res = localStorage.getItem('user');
@@ -27,32 +39,41 @@ export const googleSignIn = async (callback) => {
   callback(res.user);
 }
 
-const isSongSaved = async (songEntry, userId) => {
+const isTrackSavedInCollection = async (songEntry, userId) => {
   let response = 0;
 
-  await getSongs(
-    query(
-      songsCollection,
-      where('userId', '==', userId), 
-      where('youtubeId', '==', songEntry.youtubeId)
-    ), 
-    (queryRef) => { if(queryRef.docs?.length) response = 1; },
-    (err) => { response = -1; }
-  )
+  try {
+    const queryRef = await getDocs(
+      query(
+        trackCollection, 
+        where('youtubeId', '==', songEntry.youtubeId),
+        where('userId', '==', userId))
+      );
+    
+    if(queryRef.docs?.length) response = queryRef.docs[0];
+  } catch (err) {
+    console.log(err);
+    response = -1;
+  }
 
   return response;
 }
 
-export const addSong = async (songEntry, userId, callbackSave, callbackExists, callbackError) => {
-  const songSaved = await isSongSaved(songEntry, userId);
-  if(songSaved === -1) {
-    if(typeof callbackError === 'function') callbackError();
+export const saveTrackToCollection = async (songEntry, userId, callbackSave, callbackExists, callbackError) => {
+  const trackSaved = await isTrackSavedInCollection(songEntry, userId);
+  let updateTrack = false;
+  if(trackSaved === -1) {
+    if(typeof callbackError === 'function') callbackError('something went wrong');
     return;
   }
 
-  if(songSaved === 1) {
-    if(typeof callbackExists === 'function') callbackExists(songEntry);
-    return;
+  if(trackSaved !== 0) {
+    if(trackSaved.tags !== songEntry.tags) {
+      updateTrack = true;
+    } else {
+      if(typeof callbackExists === 'function') callbackExists(songEntry);
+      return;
+    }
   }
 
   songEntry.userId = userId;
@@ -60,29 +81,38 @@ export const addSong = async (songEntry, userId, callbackSave, callbackExists, c
 
   let songRef;
   try {
-    songRef = await addDoc(songsCollection, songEntry);
+    if(!updateTrack) {
+      songRef = await addDoc(trackCollection, songEntry);
+    } else {
+      songRef = await updateDoc(doc(trackCollection, trackSaved.id), { tags: [...songEntry.tags] })
+    }
+
   } catch(err) {
-    console.log(`Error adding document: ${ err }`);
-    if(typeof callbackError === 'function') callbackError();
+    if(typeof callbackError === 'function') callbackError(err);
     return;
   }
 
   if(typeof callbackSave === 'function') callbackSave(songEntry);
 }
 
-export const addSongs = async (songEntries, userId, callbackSave, callbackExists, callbackError) => {
-  // TODO: CallbackSave should run on addSongs finish and not per song
-  songEntries.forEach(song => {
-    if(!song) return;
-    addSong(song, userId, callbackSave, callbackExists, callbackError);
-  });
+export const deleteTrackFromCollection = async (songEntry, userId, callbackSuccess, callbackError) => {
+  const trackSaved = await isTrackSavedInCollection(songEntry, userId);
+  
+  if(trackSaved !== 0) {
+    await deleteDoc(doc(trackCollection, trackSaved.id));
+    console.log('deleted document');
+    if(typeof callbackSuccess === 'function') callbackSuccess();
+  }
 }
 
-export const getSongs = async (q, callbackFound, callbackError) => {
+export const getTracksFromCollection = async (uid, callbackFound, callbackError) => {
+  console.log('requesting saved songs');
+
   try {
-    const queryRef = await getDocs(q);
+    const queryRef = await getDocs(query(trackCollection, where('userId', '==', uid)));
     if(typeof callbackFound === 'function') callbackFound(queryRef);
   } catch(err) {
     if(typeof callbackError === 'function') callbackError(err);
   }
+
 }
