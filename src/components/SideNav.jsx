@@ -9,18 +9,8 @@ const SideNav = _ => {
 		},
 		{
 			icon: <div className='w-4 h-4 bg-light-secondary group-hover:bg-light'></div>,
-			name: 'Library',
-			location: '/library',
-		},
-		{
-			icon: <div className='w-4 h-4 bg-light-secondary group-hover:bg-light'></div>,
 			name: 'Tags',
 			location: '/tageditor',
-		},
-		{
-			icon: <div className='w-4 h-4 bg-light-secondary group-hover:bg-light'></div>,
-			name: 'Subscriptions',
-			location: '/subscriptions',
 		},
 	]
 
