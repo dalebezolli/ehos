@@ -6,24 +6,16 @@ import {
   addDoc, getDocs, deleteDoc, updateDoc,
 } from 'firebase/firestore';
 
-// const firebaseConfig = {
-//   apiKey: 'AIzaSyB_na03U4uz9muOPgieFqtRkUEEng3b3l0',
-//   authDomain: 'ehos-musicmanager.firebaseapp.com',
-//   projectId: 'ehos-musicmanager',
-//   storageBucket: 'ehos-musicmanager.appspot.com',
-//   messagingSenderId: '401813384713',
-//   appId: '1:401813384713:web:b0dbfa35e26ba2596492d8'
-// };
-
-const firebaseConfigDev = {
-  apiKey: 'AIzaSyDyyIA78L4OSDJkG6bo1lX6AbXDJdsWmSw',
-  authDomain: 'ehos-dev.firebaseapp.com',
-  projectId: 'ehos-dev',
-  messagingSenderId: '237592290212',
-  appId: '1:237592290212:web:b103a4be58b3a235229731'
+const firebaseConfig = {
+  apiKey: "AIzaSyAKLita3dK5o4tZHcrCJf1Jx2QKkNwtAhU",
+  authDomain: "ehos-live.firebaseapp.com",
+  projectId: "ehos-live",
+  storageBucket: "ehos-live.appspot.com",
+  messagingSenderId: "9629199121",
+  appId: "1:9629199121:web:9cbb05609059d6ba1b3ab0"
 };
 
-const app = initializeApp(firebaseConfigDev);
+const app = initializeApp(firebaseConfig);
 const provider = new GoogleAuthProvider();
 const auth = getAuth();
 const db = getFirestore(app);
