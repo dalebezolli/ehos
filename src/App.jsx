@@ -3,10 +3,10 @@ import ContentViewerProvider from './context/ContentViewerContext';
 import PageLayout from './routes/PageLayout';
 
 import Home from './routes/Home';
-import MusicList from './components/MusicList';
 import NoRoute from './routes/NoRoute';
 import Search from './routes/Search';
 import Login from './routes/Login';
+
 import AuthProvider, { AuthRoute } from './context/AuthContext';
 import TrackPopup from './components/TrackPopup';
 
@@ -20,9 +20,8 @@ function App() {
 
                 <Route path='/' element={ <PageLayout /> }>
                   <Route path='/' element={ <Home /> } />
-                  <Route path='list' element={ <AuthRoute><MusicList /></AuthRoute> } />
-                  <Route path='search/:searchQuery' element={ <Search /> } />
                   <Route path='login' element={ <Login /> } />
+                  <Route path='search/:searchQuery' element={ <Search /> } />
                   <Route path='*' element={ <NoRoute /> } />
                 </Route>
 
