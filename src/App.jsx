@@ -23,7 +23,7 @@ function App() {
                   <Route path='/' element={ <Home /> } />
                   <Route path='login' element={ <Login /> } />
                   <Route path='search/:searchQuery' element={ <Search /> } />
-                  <Route path='tageditor' element={ <TagEditor /> } />
+                  <Route path='tageditor' element={ <AuthRoute><TagEditor /></AuthRoute> } />
                   <Route path='*' element={ <NoRoute /> } />
                 </Route>
 
