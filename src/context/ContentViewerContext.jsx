@@ -26,7 +26,7 @@ function ContentViewerProvider({ children }) {
   };
 
   const queueTrack = (track) => {
-    let playingTrackIndex = queue.playingTrackIndex;
+    let playingTrackIndex = (queue.playingTrackIndex === -1) ? 0 : queue.playingTrackIndex;
     setQueue((prevQueue) => ({ 
       playingTrackIndex,
       queuedTracks: [...prevQueue.queuedTracks, track]

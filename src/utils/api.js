@@ -3,8 +3,6 @@
  * All these will be changed to talk with our api server once it's ready.
  */
 
-import{ dummySearch } from '../data/dummySearch';
-
 const requestSettings = {
 	method: 'GET',
 	redirect: 'follow',
