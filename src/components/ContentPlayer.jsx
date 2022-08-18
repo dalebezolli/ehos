@@ -25,14 +25,6 @@ const ContentPlayer = _ => {
 		showVolumeControl: false,
 	});
 	
-	useEffect(() => {
-		document.addEventListener('keydown', handlePlayerShortcuts);	
-
-		return () => {
-			document.removeEventListener('keydown', handlePlayerShortcuts);
-		}
-	});
-	
 	useEffect(_ => {
 		console.log(queuedTracks[playingTrackIndex]?.youtubeId, 'status:', player.status, player.playerHandler && player.playerHandler.getPlayerState());
 		if(player.status === 'playing') {
@@ -102,37 +94,6 @@ const ContentPlayer = _ => {
 			...currPlayer,
 			progressBar: (currentTime / duration) * 100
 		}))
-	}
-
-	const handlePlayerShortcuts = (event) => {
-		if(event.key === ' ' || event.key.toLowerCase() === 'k') {
-			if(player.status === 'playing') {
-				player.playerHandler.pauseVideo();
-			} else if(player.status === 'paused') {
-				player.playerHandler.playVideo();
-			}
-		}
-
-		if(event.key === 'ArrowRight' || event.key.toLowerCase() === 'l') {
-			player.playerHandler.seekTo(player.currentTime + 10);
-		}
-
-		if(event.key === 'ArrowLeft' || event.key.toLowerCase() === 'j') {
-			player.playerHandler.seekTo(player.currentTime - 10);
-		}
-
-		if(event.key.toLowerCase() === 'i') {
-			setPlayer({ ...player, showYtIframe: !player.showYtIframe });
-		}
-
-		if(event.key.toLowerCase() === 'm') {
-			playNextTrack();
-		}
-		
-		if(event.key.toLowerCase() === 'n') {
-			playPrevTrack();
-		}
-		
 	}
 
 	const handleProgressBarMouseMove = (event) => {
