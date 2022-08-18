@@ -3,6 +3,8 @@
  * All these will be changed to talk with our api server once it's ready.
  */
 
+import{ dummySearch } from '../data/dummySearch';
+
 const requestSettings = {
 	method: 'GET',
 	redirect: 'follow',
@@ -19,17 +21,18 @@ export const searchData = async (query, opts) => {
 	let size = opts && opts.size ? opts.size || 50 : 50;
 	let page = opts && opts.page ? opts.page || null : null;
 
-	const data = await fetch(
-		YOUTUBE_API_URL + 
-		'/search' +
-		'?q=' + query +
-		'&key=' + import.meta.env.VITE_YOUTUBE_API_KEY +
-		'&part=snippet' +
-		'&maxResults=' + size +
-		(page ? '&pageToken=' + page : '' ),
-		requestSettings
-	);
-	const response = await data.json();
+	// const data = await fetch(
+	// 	YOUTUBE_API_URL + 
+	// 	'/search' +
+	// 	'?q=' + query +
+	// 	'&key=' + import.meta.env.VITE_YOUTUBE_API_KEY +
+	// 	'&part=snippet' +
+	// 	'&maxResults=' + size +
+	// 	(page ? '&pageToken=' + page : '' ),
+	// 	requestSettings
+	// );
+	// const response = await data.json();
+	const response = dummySearch();
 
 	if(response.error) throw generateError(response.error);
 	return response;

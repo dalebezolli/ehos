@@ -1,56 +1,9 @@
+import { useEffect } from 'react';
 import { createContext, useContext, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { saveTrackToCollection } from '../utils/firebase';
+import { getUserTags, saveTrackToCollection } from '../utils/firebase';
 
 const TrackPopupContext = createContext();
-const TagTree = [
-	{ 
-		name: 'edm',
-		nodes: [ 
-			{ name: 'dnb', nodes: [ { name: 'liquid', nodes: [] } ] },
-			{ name: 'dubstep', nodes: [] },
-		]
-	},
-	{
-		name: 'rap',
-		nodes: [
-			{ name: 'trap', nodes: [] },
-		]
-	}
-]
-
-const generateTagSelectOptions = (track, tags, level) => {
-	if(!tags) return;
-	let options = [];
-
-	tags.forEach((tag) => {
-		const defaultValue = (track.tags[0] === tag.name) ? true : false;
-
-		if(!tag.nodes.length) {
-			options.push(
-				<option 
-					key={ tag.name } 
-					value={ tag.name }
-					defaultValue={ defaultValue }
-				>{ tag.name }</option>
-			);
-		}
-		else {
-			console.log(`Create type: ${ tag.name }`);
-			options.push(
-			<option 
-				key={ tag.name } 
-				value={ tag.name }
-				defaultValue={ defaultValue }
-				className='font-bold'
-			>{ tag.name }</option>
-			);
-			options.push(generateTagSelectOptions(track, tag.nodes, level + 1));
-		}
-	});
-
-	return options;
-}
 
 export const useTrackPopup = () => {
 	return useContext(TrackPopupContext);
@@ -59,9 +12,19 @@ export const useTrackPopup = () => {
 const TrackPopup = ({children}) => {
 	const { user } = useAuth();
 
+	const [ tags, setTags ] = useState(null);
 	const [ track, setTrack ] = useState(null);
 	const [ onSave, setOnSave ] = useState(null);
 	const genreSelectionRef = useRef();
+
+	useEffect(() => {
+		const loadTags = async () => {
+			const tags = await getUserTags(user.uid);
+			setTags(tags[0]);
+		};
+
+		if(!tags) loadTags();
+	}, [track]);
 
 	const displayTrack = (track, onSave) => {
 		setTrack(track);
@@ -82,15 +45,21 @@ const TrackPopup = ({children}) => {
 						-translate-y-1/2 -translate-x-1/2
 					'>
 						<p className='font-bold'>{ track.title }</p>
-						<p>Tags</p>
+						<p>TagEditor</p>
 
-						<select name='genre' id='genre' ref={ genreSelectionRef } >
+						<select name='genre' id='genre' ref={ genreSelectionRef } defaultValue={ track.tags[0] } >
 							<option 
 								key={ 'none' } 
 								value={ 'empty' }
-								defaultValue={ (track.tags[0]) ? false : true }
 							>Select</option>
-							{ generateTagSelectOptions(track, TagTree, 0) }
+							{
+								tags?.nodes && tags.nodes.map((tag) =>
+									<option 
+										key={ tag.name } 
+										value={ tag.name }
+									>{ tag.parent ? `${ tag.parent } ->` : '' }{ tag.name }</option>
+								)
+							}
 						</select>
 
 						<button 

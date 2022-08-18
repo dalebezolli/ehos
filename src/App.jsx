@@ -6,6 +6,7 @@ import Home from './routes/Home';
 import NoRoute from './routes/NoRoute';
 import Search from './routes/Search';
 import Login from './routes/Login';
+import TagEditor from './routes/TagEditor';
 
 import AuthProvider, { AuthRoute } from './context/AuthContext';
 import TrackPopup from './components/TrackPopup';
@@ -22,6 +23,7 @@ function App() {
                   <Route path='/' element={ <Home /> } />
                   <Route path='login' element={ <Login /> } />
                   <Route path='search/:searchQuery' element={ <Search /> } />
+                  <Route path='tageditor' element={ <TagEditor /> } />
                   <Route path='*' element={ <NoRoute /> } />
                 </Route>
 
