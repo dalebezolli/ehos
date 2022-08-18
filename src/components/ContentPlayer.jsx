@@ -205,13 +205,7 @@ const ContentPlayer = _ => {
 
 	const onSongEnd = (event) => {
 		console.log('repeat:', player.repeat);
-		if(player.repeat === 'none') return; 
-		if(player.repeat === 'song') {
-			player.playerHandler.seekTo(0);
-			return;
-		}
-
-		handlePlayNextSong();
+		playNextTrack();
 	}
 
 	const onPlayerStateChange = (event) => {
@@ -265,15 +259,6 @@ const ContentPlayer = _ => {
 				</div>
 				<div className='hover:cursor-pointer pr-2'>
 					<MdSkipNext onClick={ playNextTrack } />
-				</div>
-				<div className='hover:cursor-pointer'>
-					{
-						player.repeat === 'none' ?
-							<MdRepeat onClick={ () => setPlayer({ ...player, repeat: 'song' }) } /> :
-							player.repeat === 'song' ?
-								<MdOutlineRepeatOne className='text-blue-600' onClick={ () => setPlayer({ ...player, repeat: 'playlist' }) } /> :
-								<MdRepeat className='text-blue-600' onClick={ () => setPlayer({ ...player, repeat: 'none' }) } />
-					}
 				</div>
 			</div>
 

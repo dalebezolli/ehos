@@ -19,18 +19,17 @@ export const searchData = async (query, opts) => {
 	let size = opts && opts.size ? opts.size || 50 : 50;
 	let page = opts && opts.page ? opts.page || null : null;
 
-	// const data = await fetch(
-	// 	YOUTUBE_API_URL + 
-	// 	'/search' +
-	// 	'?q=' + query +
-	// 	'&key=' + import.meta.env.VITE_YOUTUBE_API_KEY +
-	// 	'&part=snippet' +
-	// 	'&maxResults=' + size +
-	// 	(page ? '&pageToken=' + page : '' ),
-	// 	requestSettings
-	// );
-	// const response = await data.json();
-	const response = dummySearch();
+	const data = await fetch(
+		YOUTUBE_API_URL + 
+		'/search' +
+		'?q=' + query +
+		'&key=' + import.meta.env.VITE_YOUTUBE_API_KEY +
+		'&part=snippet' +
+		'&maxResults=' + size +
+		(page ? '&pageToken=' + page : '' ),
+		requestSettings
+	);
+	const response = await data.json();
 
 	if(response.error) throw generateError(response.error);
 	return response;
