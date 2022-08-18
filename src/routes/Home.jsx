@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getTracksFromCollection } from '../utils/firebase';
 import TrackList from '../components/TrackList';
@@ -7,6 +7,12 @@ import TrackList from '../components/TrackList';
 const Home = _ => {
 	const { user } = useAuth();
 	const [ savedSongs, setSavedSongs ] = useState([]);
+	const filterRef = useRef();
+	let [ filteredSongs, setFilteredSongs ] = useState(savedSongs);
+
+	useEffect(() => {
+		setFilteredSongs(savedSongs);
+	}, [savedSongs]);
 
 	useEffect(() => {
 		const getUserSavedSongs = async () => {
@@ -42,9 +48,28 @@ const Home = _ => {
 				!user ?
 					<p>Search to get started 🎶</p> : (
 						<div>
-							<p>Saved Songs</p>
+							<p className='mb-8'>Saved Songs</p>
+
+							<div>
+								<input type='text' id='filter' className='text-dark' ref={ filterRef } />
+								<button 
+									className='px-2 bg-light-secondary text-dark'
+									onClick={ () => {
+										if(!filterRef.current.value) {
+											setFilteredSongs(savedSongs);
+											return;
+										}
+
+										setFilteredSongs(savedSongs.filter((song) => 
+											song.tags[0] === filterRef.current.value
+										))
+									}
+								}
+								>Filter</button>
+							</div>
+
 							<TrackList 
-								tracks={ savedSongs } 
+								tracks={ filteredSongs } 
 								enabledControls={{ save: true, queue: true, delete: true }} 
 								controlHandlers={{ 
 									onSave: handleUpdateCollectionTrack,
