@@ -1,7 +1,9 @@
 import { usePlayer } from '../context/ContentViewerContext';
 import { useUser } from '../context/UserContext';
-import { useTrackPopup } from './TrackPopup';
+import TrackPopup from './TrackPopup';
 import { deleteTrackFromCollection } from '../utils/firebase';
+import { usePopup } from '../routes/PageLayout';
+import { useRef } from 'react';
 
 const TrackList = ({ tracks, enabledControls = { save: true, queue: true }, controlHandlers }) => {
 	return(
@@ -24,7 +26,8 @@ const TrackList = ({ tracks, enabledControls = { save: true, queue: true }, cont
 const TrackListing = ({ track, position, enabledControls, controlHandlers }) => {
 	const { playTrack, queueTrack } = usePlayer();
 	const { user } = useUser();
-	const { displayTrack } = useTrackPopup();
+	const { insertPopup, removePopup } = usePopup();
+	const trackPopupRef = useRef();
 
 	const handleSelectTrack = (track) => {
 		playTrack(track);
@@ -32,7 +35,7 @@ const TrackListing = ({ track, position, enabledControls, controlHandlers }) => 
 	
 	const handleSaveTrack = (event, track, onSave) => {
 		event.stopPropagation();
-		displayTrack(track, onSave);
+		trackPopupRef.current = insertPopup(<TrackPopup track={ track } onSave={ onSave } onCancel={ () => { removePopup(trackPopupRef.current) } } />);
 	};
 
 	const handleDeleteTrack = (event, track, onDelete) => {

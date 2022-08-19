@@ -9,14 +9,12 @@ import Login from './routes/Login';
 import TagEditor from './routes/TagEditor';
 
 import UserProvider, { AuthRoute } from './context/UserContext';
-import TrackPopup from './components/TrackPopup';
 
 function App() {
   return(
       <ContentViewerProvider>
         <BrowserRouter>
           <UserProvider>
-            <TrackPopup>
               <Routes>
 
                 <Route path='/' element={ <PageLayout /> }>
@@ -28,7 +26,6 @@ function App() {
                 </Route>
 
               </Routes>
-            </TrackPopup>
           </UserProvider>
         </BrowserRouter>
       </ContentViewerProvider>
