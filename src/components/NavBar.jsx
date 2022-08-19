@@ -1,10 +1,10 @@
-import { useAuth } from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 
 import { Link } from 'react-router-dom';
 import SearchBar from './SearchBar';
 
 const NavBar = _ => {
-	const auth = useAuth();
+	const auth = useUser();
 
 	return(
 		<nav>

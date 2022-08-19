@@ -1,10 +1,10 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 
 const Login = _ => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const auth = useAuth();
+	const auth = useUser();
 
 	let from = location.state ? location.state.from : null;
 	let path = from ? from.pathname + from.search : '/';

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { createContext, useContext, useState, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 import { getUserTags, saveTrackToCollection } from '../utils/firebase';
 
 const TrackPopupContext = createContext();
@@ -10,7 +10,7 @@ export const useTrackPopup = () => {
 }
 
 const TrackPopup = ({children}) => {
-	const { user } = useAuth();
+	const { user } = useUser();
 
 	const [ tags, setTags ] = useState(null);
 	const [ track, setTrack ] = useState(null);

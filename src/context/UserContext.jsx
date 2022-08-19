@@ -2,9 +2,9 @@ import { useContext, createContext, useState } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { googleSignIn } from '../utils/firebase';
 
-let AuthContext = createContext();
+let UserContext = createContext();
 
-export default function AuthProvider({ children }) {
+export default function UserProvider({ children }) {
 	let [ user, setUser ] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
 	let signin = (callback) => {
@@ -23,18 +23,18 @@ export default function AuthProvider({ children }) {
 	let value = { user, signin, signout };
 
 	return (
-		<AuthContext.Provider value={ value }>
+		<UserContext.Provider value={ value }>
 			{ children }
-		</AuthContext.Provider>
+		</UserContext.Provider>
 	)
 }
 
-export const useAuth = () => {
-	return useContext(AuthContext);
+export const useUser = () => {
+	return useContext(UserContext);
 }
 
 export const AuthRoute = ({ children }) => {
-	const auth = useAuth();
+	const auth = useUser();
 	const location = useLocation();
 
 	if(!auth.user) {

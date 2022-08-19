@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 import { getTracksFromCollection } from '../utils/firebase';
 import TrackList from '../components/TrackList';
+import { usePopup } from './PageLayout';
 
 
 const Home = _ => {
-	const { user } = useAuth();
+	const { user } = useUser();
 	const [ savedSongs, setSavedSongs ] = useState([]);
 	const filterRef = useRef();
 	let [ filteredSongs, setFilteredSongs ] = useState(savedSongs);

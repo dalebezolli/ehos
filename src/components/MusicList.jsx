@@ -2,7 +2,7 @@ import { useEffect, useContext, useRef, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { ContentViewerContext } from '../context/ContentViewerContext';
-import { useAuth } from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 
 import { getResourceId, convertYoutubeEntryToEhosEntry } from '../utils/helpers';
 import { saveTrackToCollection } from '../utils/firebase';
@@ -12,7 +12,7 @@ import { FiPlus } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa';
 
 const MusicList = () => {
-  const { user } = useAuth();
+  const { user } = useUser();
   const { selectedList, selectSong, searchContent, error : searchError } = useContext(ContentViewerContext);
   const [ searchParams ] = useSearchParams();
   const [ loadMore, setLoadMore ] = useState(false);
@@ -155,7 +155,7 @@ const MusicList = () => {
 }
 
 const MusicEntry = ({index, resource, resourceOrigin, selected, onSelect }) => {
-  const { user } = useAuth();
+  const { user } = useUser();
 
   const controls = (resourceOrigin === 'search' ? (
     <FiPlus />

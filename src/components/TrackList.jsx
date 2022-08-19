@@ -1,5 +1,5 @@
 import { usePlayer } from '../context/ContentViewerContext';
-import { useAuth } from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 import { useTrackPopup } from './TrackPopup';
 import { deleteTrackFromCollection } from '../utils/firebase';
 
@@ -23,7 +23,7 @@ const TrackList = ({ tracks, enabledControls = { save: true, queue: true }, cont
 
 const TrackListing = ({ track, position, enabledControls, controlHandlers }) => {
 	const { playTrack, queueTrack } = usePlayer();
-	const { user } = useAuth();
+	const { user } = useUser();
 	const { displayTrack } = useTrackPopup();
 
 	const handleSelectTrack = (track) => {

@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 import { getUserTags, uploadUserTags } from '../utils/firebase';
 
 const TagEditor = _ => {
-	const { user } = useAuth();
+	const { user } = useUser();
 	const [tags, setTags] = useState(null);
 
 	useEffect(() => {

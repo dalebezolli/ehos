@@ -8,14 +8,14 @@ import Search from './routes/Search';
 import Login from './routes/Login';
 import TagEditor from './routes/TagEditor';
 
-import AuthProvider, { AuthRoute } from './context/AuthContext';
+import UserProvider, { AuthRoute } from './context/UserContext';
 import TrackPopup from './components/TrackPopup';
 
 function App() {
   return(
       <ContentViewerProvider>
         <BrowserRouter>
-          <AuthProvider>
+          <UserProvider>
             <TrackPopup>
               <Routes>
 
@@ -29,7 +29,7 @@ function App() {
 
               </Routes>
             </TrackPopup>
-          </AuthProvider>
+          </UserProvider>
         </BrowserRouter>
       </ContentViewerProvider>
   );
