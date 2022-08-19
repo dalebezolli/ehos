@@ -61,7 +61,7 @@ export const saveTrackToCollection = async (songEntry, userId, callbackSave, cal
   }
 
   if(trackSaved !== 0) {
-    if(trackSaved.tags !== songEntry.tags) {
+    if(trackSaved.data().tags[0] !== songEntry.tags[0]) {
       updateTrack = true;
     } else {
       if(typeof callbackExists === 'function') callbackExists(songEntry);
