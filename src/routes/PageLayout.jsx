@@ -49,7 +49,7 @@ const PopupProvider = ({ children }) => {
 		if(blur) 
 			Element = <div className='
 					fixed w-screen h-screen top-0 left-0 z-100 
-					bg-[#000000af]
+					bg-[#000000af] text-dark
 				'>
 					{ Element }
 				</div>
