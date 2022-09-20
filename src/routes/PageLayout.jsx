@@ -1,17 +1,39 @@
-import { useContext, createContext, useState } from 'react';
+import { useContext, createContext, useState, useEffect, useRef } from 'react';
 import { Outlet } from 'react-router-dom';
 import { usePlayer } from '../context/ContentViewerContext';
 
 import ContentPlayer from '../components/ContentPlayer';
 import NavBar from '../components/NavBar';
 import SideNav from '../components/SideNav';
+import Changelog from '../components/Changelog';
+
+
+const PageSetup = ({children}) => {
+	return (
+		<PopupProvider>
+			<PageLayout />
+		</PopupProvider>
+	);
+};
 
 const PageLayout = _ => {
 	const { queue } = usePlayer();
 	const { playingTrackIndex } = queue;
 
+	const { insertPopup, removePopup } = usePopup();
+	const changelogPopupRef = useRef();
+
+	useEffect(() => {
+		if(changelogPopupRef.current)	return;
+
+		changelogPopupRef.current = insertPopup(
+			<Changelog onCancel={ () => { 
+				removePopup(changelogPopupRef.current) 
+			} } /> 
+		);
+	}, []);
+
 	return (
-		<PopupProvider>
 			<div className=''>
 				<NavBar />
 
@@ -25,7 +47,6 @@ const PageLayout = _ => {
 				
 				{ playingTrackIndex !== -1 && <ContentPlayer /> }
 			</div>
-		</PopupProvider>
 	);
 };
 
@@ -38,21 +59,13 @@ export const usePopup = () => {
 const PopupProvider = ({ children }) => {
 	const [popups, setPopups] = useState([]);
 
-	const insertPopup = (Element, blur) => {
+	const insertPopup = (Element) => {
 		if(!Element) return;
 		let exists = false;
 		popups.forEach(popup => {
 			if(!exists && popup.id === Element.id) exists = true;
 		});
 		if(exists) return;
-
-		if(blur) 
-			Element = <div className='
-					fixed w-screen h-screen top-0 left-0 z-100 
-					bg-[#000000af] text-dark
-				'>
-					{ Element }
-				</div>
 
 		setPopups([
 			...popups, 
@@ -79,4 +92,4 @@ const PopupProvider = ({ children }) => {
 	);
 }
 
-export default PageLayout;
+export default PageSetup;

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useContext, createContext, useState } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { googleSignIn } from '../utils/firebase';
@@ -5,11 +6,25 @@ import { googleSignIn } from '../utils/firebase';
 let UserContext = createContext();
 
 export default function UserProvider({ children }) {
-	let [ user, setUser ] = useState(JSON.parse(localStorage.getItem('user')) || null);
+	let [ user, setUser ] = useState(() => {
+ 		return localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null
+	});
+	const [ lastChangelogDate, setLastChangelogDate ] = useState(localStorage.getItem('lastChangelogDate'));
+	const [ lastChangelog, setLastChangelog ] = useState(localStorage.getItem('lastChangelog'));
+
+	useEffect( () => {
+		localStorage.setItem('lastChangelog', lastChangelog);
+	}, [lastChangelog]);
+
+	useEffect( () => {
+		localStorage.setItem('lastChangelogDate', lastChangelogDate);
+	}, [lastChangelogDate]);
 
 	let signin = (callback) => {
 		googleSignIn((user) => {
 			setUser(user);
+			setLastChangelogDate(new Date().toLocaleDateString());
+
 			callback();
 		});
 	}
@@ -20,7 +35,7 @@ export default function UserProvider({ children }) {
 		callback();
 	} 
 	
-	let value = { user, signin, signout };
+	let value = { user, signin, signout, lastChangelogDate, setLastChangelogDate, lastChangelog, setLastChangelog };
 
 	return (
 		<UserContext.Provider value={ value }>

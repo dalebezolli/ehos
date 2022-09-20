@@ -3,7 +3,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { 
   getFirestore, collection, 
   Timestamp, doc, query, where,
-  addDoc, getDocs, deleteDoc, updateDoc,
+  addDoc, getDocs, deleteDoc, updateDoc, limit, orderBy,
 } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -19,8 +19,10 @@ const app = initializeApp(firebaseConfig);
 const provider = new GoogleAuthProvider();
 const auth = getAuth();
 const db = getFirestore(app);
+
 const trackCollection = collection(db, 'saved-songs');
 const tagsCollection = collection(db, 'userTags');
+const logsCollection = collection(db, 'changelog');
 
 export const googleSignIn = async (callback) => {
   let res = localStorage.getItem('user');
@@ -156,5 +158,18 @@ export const uploadUserTags = async (tags) => {
     }
   } catch(err) {
     console.log(err);
+  }
+}
+
+export const getChangelog = async (lastChangelogDate) => {
+
+  try {
+    const date = (lastChangelogDate === null) ? new Date(lastChangelogDate) : new Date(2022, 9, 8);
+    const timestamp = Timestamp.fromDate(date);
+    const logsRef = await getDocs(query(logsCollection, orderBy('date', 'desc'), limit(1))); 
+    return (logsRef.docs.length > 0 ) ? logsRef.docs[0] : null;
+  } catch(err) {
+    console.log(err);
+    return null;
   }
 }

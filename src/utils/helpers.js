@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 export const getResourceId = (resource) => {
 	let id = '';
 	try {

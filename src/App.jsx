@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ContentViewerProvider from './context/ContentViewerContext';
-import PageLayout from './routes/PageLayout';
+import PageSetup from './routes/PageLayout';
 
 import Home from './routes/Home';
 import NoRoute from './routes/NoRoute';
@@ -17,7 +17,7 @@ function App() {
           <UserProvider>
               <Routes>
 
-                <Route path='/' element={ <PageLayout /> }>
+                <Route path='/' element={ <PageSetup /> }>
                   <Route path='/' element={ <Home /> } />
                   <Route path='login' element={ <Login /> } />
                   <Route path='search/:searchQuery' element={ <Search /> } />
