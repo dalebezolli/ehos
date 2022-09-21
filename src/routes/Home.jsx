@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '../context/UserContext';
-import { getTracksFromCollection } from '../utils/firebase';
+import { getTracksFromCollection, getUserTags } from '../utils/firebase';
 import TrackList from '../components/TrackList';
 import { usePopup } from './PageLayout';
 
@@ -28,6 +28,40 @@ const Home = _ => {
 
 		getUserSavedSongs();
 	}, []);
+
+	const filterSavedSongs = async (filter) => {
+		let treeSearch = true;	
+
+		if(filter.charAt(0) === '*') {
+			treeSearch = false;
+			filter = filter.slice(1);
+		}	
+
+		const findTagChildren = (filterTag, tags) => {
+			let children = [];		
+
+			for(let tag of tags) {
+				if(tag.parent === filterTag) {
+					children = [...children, tag.name];
+					children = [...children, ...findTagChildren(tag.name, tags)];
+				}
+			}
+			return children;
+		};	
+
+		let children;
+		if(treeSearch) {
+			const userTags = await getUserTags(user.uid);
+			const genreTags = userTags[0].nodes;
+			children = [filter , ...findTagChildren(filter, genreTags)];
+		} else {
+			children = [filter];
+		}
+		
+		setFilteredSongs(savedSongs.filter((song) =>
+			children.includes(song.tags[0])
+		));
+	};
 
 	const handleUpdateCollectionTrack = (track) => {
 		setSavedSongs((prevSavedSong) =>
@@ -61,9 +95,7 @@ const Home = _ => {
 											return;
 										}
 
-										setFilteredSongs(savedSongs.filter((song) => 
-											song.tags[0] === filterRef.current.value
-										))
+										filterSavedSongs(filterRef.current.value);
 									}
 								}
 								>Filter</button>
