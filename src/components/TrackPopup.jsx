@@ -24,6 +24,7 @@ const TrackPopup = ({ track, onSave, onCancel }) => {
 			absolute max-w-[1000px] p-6
 			bg-light-secondary top-1/2 left-1/2
 			-translate-y-1/2 -translate-x-1/2
+			text-dark bg-[#000000af]
 		'>
 			<p className='font-bold'>{ track.title }</p>
 			<p>TagEditor</p>
