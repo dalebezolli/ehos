@@ -37,11 +37,3 @@ export const formatSecondsToTime = (time) => {
 
 	return minutes + ':' + seconds;	
 }
-
-export const isInViewport = (element) => {
-	const rect = element.getBoundingClientRect();
-	return (
-		rect.top >= 0 &&
-		rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
-	);
-};

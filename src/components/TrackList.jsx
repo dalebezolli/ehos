@@ -11,7 +11,7 @@ const TrackList = ({ tracks, enabledControls = { save: true, queue: true }, cont
 			{
 				tracks.map((track, index) =>
 					<TrackListing 
-						key={ track.youtubeId } 
+						key={ track.youtubeId + String(index) } 
 						track={ track } 
 						position={ index + 1 } 
 						enabledControls={ enabledControls }
