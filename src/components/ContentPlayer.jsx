@@ -166,7 +166,12 @@ const ContentPlayer = _ => {
 
 	const onSongEnd = (event) => {
 		console.log('repeat:', player.repeat);
-		playNextTrack();
+		// TODO: repeat must have none, song and playlist
+		if(player.repeat === 'none') {
+			playNextTrack();
+		} else {
+			player.playerHandler.seekTo(0);
+		}	
 	}
 
 	const onPlayerStateChange = (event) => {
@@ -220,6 +225,14 @@ const ContentPlayer = _ => {
 				</div>
 				<div className='hover:cursor-pointer pr-2'>
 					<MdSkipNext onClick={ playNextTrack } />
+				</div>
+
+				<div>
+					<p 
+						className={ (player.repeat === 'song') ? 'text-primary' : 'text-light'} 
+						onClick={ () => { setPlayer({...player, repeat: (player.repeat !== 'song' ) ? 'song' : 'none' })} }>
+							loop
+					</p>
 				</div>
 			</div>
 
