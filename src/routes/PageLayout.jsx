@@ -34,17 +34,12 @@ const PageLayout = _ => {
 	}, []);
 
 	return (
-			<div className=''>
+			<div>
 				<NavBar />
 
-				<div className={`flex ${ playingTrackIndex !== -1 ? 'h-[80vh]' : 'h-[90vh]' }`}>
-					<SideNav />
-
-					<div className='overflow-x-scroll w-full'>
-						<Outlet />
-					</div>
+				<div className='pt-[100px]'>
+					<Outlet />
 				</div>
-				
 				{ playingTrackIndex !== -1 && <ContentPlayer /> }
 			</div>
 	);

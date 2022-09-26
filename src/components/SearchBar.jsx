@@ -35,8 +35,9 @@ const SearchBar = _ => {
       className='
         flex p-2 bg-dark-secondary 
       focus-within:bg-input-focus rounded-3xl 
-        transition-all'
-    >
+        transition-all
+        w-[60%] max-w-[650px]
+      '>
       <button 
         className='pl-2 pr-4 text-light-secondary hover:text-light transition-colors' 
         onClick={ handleClick }
@@ -54,8 +55,9 @@ const SearchBar = _ => {
         className='
           bg-inherit 
           text-light placeholder-light-secondary 
-          w-[400px] outline-none
-          transition-all'
+          outline-none
+          transition-all w-full
+        '
       />
     </form>
   );
