@@ -37,7 +37,7 @@ const PageLayout = _ => {
 			<div>
 				<NavBar />
 
-				<div className='pt-[100px]'>
+				<div className={`pt-[100px] ${(playingTrackIndex === -1) ? '' : 'pb-[64px]'}`}>
 					<Outlet />
 				</div>
 				{ playingTrackIndex !== -1 && <ContentPlayer /> }

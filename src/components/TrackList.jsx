@@ -1,9 +1,12 @@
+import { useRef, useState } from 'react';
+import { HiDotsVertical } from 'react-icons/hi';
+import { decode } from 'he';
+
 import { usePlayer } from '../context/ContentViewerContext';
 import { useUser } from '../context/UserContext';
 import TrackPopup from './TrackPopup';
 import { deleteTrackFromCollection } from '../utils/firebase';
 import { usePopup } from '../routes/PageLayout';
-import { useRef } from 'react';
 
 const TrackList = ({ tracks, enabledControls = { save: true, queue: true }, controlHandlers }) => {
 	return(
@@ -28,6 +31,8 @@ const TrackListing = ({ track, position, enabledControls, controlHandlers }) => 
 	const { user } = useUser();
 	const { insertPopup, removePopup } = usePopup();
 	const trackPopupRef = useRef();
+
+	const [ showTrackOptions, setShowTrackOptions ] = useState(false);
 
 	const handleSelectTrack = (track) => {
 		playTrack(track);
@@ -55,62 +60,85 @@ const TrackListing = ({ track, position, enabledControls, controlHandlers }) => 
 		<div 
 			className='
 				group
-				flex p-3 text-sm
+				flex py-1.5 text-sm
 				text-light-secondary
-				hover:bg-dark-secondary rounded-lg
+				hover:bg-[rgba(36,36,38,0.6)] rounded-lg
+				cursor-pointer
 			'
 			onClick={ () => handleSelectTrack(track) }
+			onMouseLeave={ () => { setShowTrackOptions(false) } }
 		>
-			<div className='flex items-center h-[69px] mr-8'>
+			<div className='flex justify-center items-center w-[32px] h-[42px]'>
 				<p>{ position }</p>
 			</div>
 
 			<div 
-				className='min-w-[86px] h-[69px] bg-[length:190%] bg-center bg-no-repeat rounded-lg mr-4'
+				className='w-[42px] h-[42px] bg-[length:180%] bg-center bg-no-repeat rounded-lg'
 				style={{ backgroundImage: `url(${ track.thumbnail })` }} 
 			></div>
 
-			<div className='flex-grow'>
-				<p className='mb-2 text-md max-h-[1rem] overflow-y-hidden text-light'>{ track.title }</p>
-				<p>{ track.author }</p>
-				<div className='flex'>
-					{
-						track.tags.map((tag) => 
-							<p key={tag} className='bg-primary rounded-full text-light px-2 text-tiny'>{ tag }</p>
-						)
-					}
-				</div>
+			<div className='px-5 w-[65%]'>
+				<p className='text-light text-base'>{ decode(track.title) }</p>
+				<p>{ decode(track.author) }</p>
+			</div>
+
+			<div className='flex items-center w-[20%]'>
+				{
+					track.tags.map((tag) => 
+						<p key={tag} className='px-2 text-sm'>{ tag }</p>
+					)
+				}
+			</div>
+			 
+			<div className='flex justify-center items-center w-[5%]'>
+				<p>00:00</p>
 			</div>
 
 			<div className='flex justify-center items-center'>
-				<p className='mr-2'>00:00</p>
-				<div className='invisible group-hover:visible'>
-					{
-						enabledControls.save &&
-						<button 
-							className='hover:text-light'
-							onClick={ 
-								(event) => { handleSaveTrack(event, track, controlHandlers?.onSave) }
-							}
-						>save</button>
-					}
-
-					{
-						enabledControls.delete &&
-						<button 
-							className='hover:text-light'
-							onClick={ (event) => { 
-								handleDeleteTrack(event, track, controlHandlers?.onDelete);
+				<div className='invisible group-hover:visible relative'>
+					<div 
+						className='p-2 rounded-full hover:bg-[rgba(36,36,38,0.9)]'
+						onClick={
+							(event) => { 
+								event.stopPropagation(); 
+								setShowTrackOptions(!showTrackOptions);
 							}}
-						>delete</button>
-					}
+					>
+						<HiDotsVertical />
+					</div>				
+					
+					{ 
+						showTrackOptions && (
+							<div className='absolute w-[200px] bg-dark-secondary drop-shadow-[0px_0px_5px_#111111FF] right-0 px-4 py-2 rounded-md'>
+								{
+									enabledControls.save &&
+									<button 
+										className='hover:text-light py-2 w-full text-left'
+										onClick={ 
+											(event) => { handleSaveTrack(event, track, controlHandlers?.onSave) }
+										}
+									>save</button>
+								}
 
-					{
-						enabledControls.queue &&
-						<button 
-							className='hover:text-light'
-							onClick={ (event) => { handleQueueTrack(event, track) }}
-						>queue</button>
+								{
+									enabledControls.delete &&
+									<button 
+										className='hover:text-light w-full py-2 text-left'
+										onClick={ (event) => { 
+											handleDeleteTrack(event, track, controlHandlers?.onDelete);
+										}}
+									>delete</button>
+								}
+
+								{
+									enabledControls.queue &&
+									<button 
+										className='hover:text-light w-full py-2 text-left'
+										onClick={ (event) => { handleQueueTrack(event, track) }}
+									>queue</button>
+								}
+							</div>
+						)
 					}
 				</div>
 			</div>

@@ -1,11 +1,12 @@
 import YouTube from 'react-youtube';
-import { useState, useContext, useEffect, useCallback } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { ContentViewerContext } from '../context/ContentViewerContext';
 
 import { getResourceId, formatSecondsToTime } from '../utils/helpers';
+import { decode } from 'he';
 
-import { FaPause, FaPlay, FaVolumeMute, FaVolumeDown, FaVolumeUp } from 'react-icons/fa';
-import { MdRepeat, MdOutlineRepeatOne, MdSkipNext, MdSkipPrevious } from 'react-icons/md';
+import { FaPause, FaPlay } from 'react-icons/fa';
+import { MdSkipNext, MdSkipPrevious } from 'react-icons/md';
 
 const ContentPlayer = _ => {
 	const { selectedList, queue, playPrevTrack, playNextTrack } = useContext(ContentViewerContext);
@@ -92,21 +93,20 @@ const ContentPlayer = _ => {
 	const updatePlayerProgressBar = (currentTime, duration) => {
 		setPlayer((currPlayer) => ({
 			...currPlayer,
-			progressBar: (currentTime / duration) * 100
+			progressBar: (currPlayer.currentTime * window.innerWidth) / currPlayer.duration
 		}))
 	}
-
 	const handleProgressBarMouseMove = (event) => {
 		if(event.buttons === 1) {
-			setPlayer((currPlayer) => ({ 
-				...currPlayer, 
-				currentTime: (event.target.value / 100) * currPlayer.playerHandler.getDuration(),
-			}));
+			setPlayer((currPlayer) => ({
+				...currPlayer,
+				currentTime: event.clientX * player.duration / window.innerWidth,
+				progressBar: event.clientX,
+			}))
 		}
 	}
 
-	const handleProgressBarMouseDown = (event) => {
-		console.log('progressbar down');
+	const handlePorgressBarMouseDown = (event) => {
 		let timeInterval = player.currentTimeIntervalHandle;
 		let progressBarInterval = player.progressBarIntervalHandle;
 
@@ -127,8 +127,7 @@ const ContentPlayer = _ => {
 		});
 	}
 
-	const handleProgressBarMouseUp = (event) => {
-		console.log('progressbar up');
+	const handlePorgressBarMouseUp = (event) => {
 		let timeInterval = player.currentTimeIntervalHandle;
 		let progressBarInterval = player.progressBarIntervalHandle;
 
@@ -155,6 +154,7 @@ const ContentPlayer = _ => {
 			currentTimeIntervalHandle: timeInterval,
 			progressBarIntervalHandle: progressBarInterval,
 		});
+
 	}
 
 	const onPlayerReady = (event) => {
@@ -196,120 +196,139 @@ const ContentPlayer = _ => {
 		}
 		setPlayer((currPlayer) => ({ ...currPlayer, status }));
 	}
-	
+
+	if(playingTrackIndex === -1) return;
   return (
-    <div 
-			className='
-				w-full h-[10vh]
-			bg-dark-secondary text-light
-				flex justify-between items-center
-				px-3 relative' 	
-		>
-			<div id='player-controls' className='flex'>
-				<div className='hover:cursor-pointer pr-2'>
-					<MdSkipPrevious 
-					 	className={``}
-						onClick={ playPrevTrack } 
-					/>
-				</div>
-				<div className='hover:cursor-pointer pr-2'>
-					{
-						player.status === 'playing' ?
-							<FaPause onClick={ () => { 
-								player.playerHandler.pauseVideo();
-							}} /> :
-							<FaPlay onClick={ () => {
-								player.playerHandler.playVideo();
-							}} /> 
-					}
-				</div>
-				<div className='hover:cursor-pointer pr-2'>
-					<MdSkipNext onClick={ playNextTrack } />
-				</div>
+		<div className='fixed w-full bottom-0 select-none'>
+			<div className='flex flex-col'>
 
-				<div>
-					<p 
-						className={ (player.repeat === 'song') ? 'text-primary' : 'text-light'} 
-						onClick={ () => { setPlayer({...player, repeat: (player.repeat !== 'song' ) ? 'song' : 'none' })} }>
-							loop
-					</p>
-				</div>
-			</div>
-
-			<div className='flex'>
-				<p className='p-2'>{ formatSecondsToTime(player.currentTime) }</p>
-				<input 
-					type='range' 
-					name='player-progress-bar' 
-					id='player-progress-bar' 
-					className='w-[300px]'
-					value={ player.progressBar }
-					onMouseDown={ handleProgressBarMouseDown }
-					onMouseUp={ handleProgressBarMouseUp } 
+				<div id='progress-bar' 
+					className='h-[10px] flex items-end overflow-visible group cursor-pointer'
 					onMouseMove={ handleProgressBarMouseMove }
-					onChange={ (event) => { setPlayer({...player, progressBar: event.target.value}) } }
-				/>
-				<p className='p-2'>{ formatSecondsToTime(player.duration) }</p>
-			</div>
-
-			<div className='relative overflow-visible' 
-				onMouseEnter={ () => { setPlayer({ ...player, showVolumeControl: true }) } } 
-				onMouseLeave={ () => { setPlayer({ ...player, showVolumeControl: false }) } }
-			>
-				<div className={ `
-					absolute 
-					w-6 h-32 bottom-4 -left-1 
-					bg-slate-500
-					${ player.showVolumeControl ? '' : 'hidden' }
-				`}>
-					<input 
-						type='range' 
-						className='absolute -rotate-90 w-[100px] bottom-[40%] -left-[38px]' 
-						value={ player.volume }
-						onChange={ (event) => { setPlayer({ ...player, volume: event.target.value }) } }
-					/>
-				</div>
-				{
-					player.volume < 1 ? 
-						<FaVolumeMute /> :
-						player.volume <= 50 ?
-							<FaVolumeDown /> :
-							<FaVolumeUp />
-				}
-			</div>
-
-			{
-				playingTrackIndex !== -1 &&
-				<div 
-					className='flex hover:cursor-pointer' 
-					onClick={ 
-						() => setPlayer({ ...player, showYtIframe: !player.showYtIframe })
-					}
+					onMouseDown={ handlePorgressBarMouseDown }
+					onMouseUp={ handlePorgressBarMouseUp }
 				>
-					<div className='text-xs text-right'>
-						<p>{ queuedTracks[playingTrackIndex].title }</p>
-						<p>{ queuedTracks[playingTrackIndex].author }</p>
+					<div 
+						className='bg-[#474747] 
+							h-[4px] w-full relative
+							group-hover:h-[10px] transition-[height]'
+					>
+						<div 
+							id='inner-porgress-bar' 
+							className='h-[4px] bg-primary group-hover:h-[10px] transition-[height]' 
+							style={{width: `${player.progressBar}px`}}
+						></div>
+						<div 
+							className='absolute top-1/2 w-[10px] h-[10px]
+								rounded-full bg-primary z-10 
+								invisible -translate-y-1/2 -translate-x-1/2 
+								transition-[width,height]
+								hover:!w-[24px] hover:!h-[24px]
+								group-hover:visible group-hover:w-[16px] group-hover:h-[16px]'
+							style={{left: `${player.progressBar}px`}}
+						></div>
+					</div>
+				</div>
+
+				<div 
+					className='
+						w-full h-[10vh]
+					bg-dark-secondary text-light
+						px-3 relative flex' 	
+				>
+
+					<div className='w-1/3 flex items-center'>
+						<p className='text-sm text-light-secondary pr-3'>
+							{ formatSecondsToTime(player.currentTime) }
+							/
+							{ formatSecondsToTime(player.duration) }
+						</p>
+
+						<div className='pr-3 cursor-pointer'>
+							<p 
+								className={ `text-sm ${(player.repeat === 'song') ? 'text-light' : 'text-light-secondary'}` } 
+								onClick={ () => { setPlayer({...player, repeat: (player.repeat !== 'song' ) ? 'song' : 'none' })} }>
+									loop
+							</p>
+						</div>
+
+						<div className='relative flex h-full items-center' 
+							onMouseEnter={ () => { setPlayer({ ...player, showVolumeControl: true }) } } 
+							onMouseLeave={ () => { setPlayer({ ...player, showVolumeControl: false }) } }
+						>
+							<p className='text-sm text-light-secondary pr-1'>volume</p>
+
+							<div className={ `
+								${ player.showVolumeControl ? '' : 'hidden' }
+							`}>
+								<input 
+									type='range' 
+									className='w-[100px]' 
+									value={ player.volume }
+									onChange={ (event) => { setPlayer({ ...player, volume: event.target.value }) } }
+								/>
+							</div>
+						</div>
+
 					</div>
 
-					<div 
-						style={{ backgroundImage: `url(${ queuedTracks[playingTrackIndex].thumbnail })` }} 
-						className='ml-2 h-8 w-8 bg-[length:190%] bg-center bg-no-repeat rounded-md' 
-					></div>
+					<div className='w-1/3 flex items-center justify-center'>
+						<div className='hover:cursor-pointer pr-2'>
+							<MdSkipPrevious 
+								className={``}
+								onClick={ playPrevTrack } 
+							/>
+						</div>
+
+						<div className='hover:cursor-pointer pr-2'>
+							{
+								player.status === 'playing' ?
+									<FaPause onClick={ () => { 
+										player.playerHandler.pauseVideo();
+									}} /> :
+									<FaPlay onClick={ () => {
+										player.playerHandler.playVideo();
+									}} /> 
+							}
+						</div>
+
+						<div className='hover:cursor-pointer pr-2'>
+							<MdSkipNext onClick={ playNextTrack } />
+						</div>
+					</div>
+
+					<div className='w-1/3 flex items-center justify-end'>
+						<div 
+							className='flex hover:cursor-pointer' 
+							onClick={ 
+								() => setPlayer({ ...player, showYtIframe: !player.showYtIframe })
+							}
+						>
+
+							<div className='text-xs text-right'>
+								<p>{ decode(queuedTracks[playingTrackIndex].title) }</p>
+								<p className='text-light-secondary'>{ decode(queuedTracks[playingTrackIndex].author) }</p>
+							</div>
+
+							<div 
+								style={{ backgroundImage: `url(${ queuedTracks[playingTrackIndex].thumbnail })` }} 
+								className='ml-2 h-8 w-8 bg-[length:190%] bg-center bg-no-repeat rounded-md' 
+							></div>
+						</div>
+					</div>
+
+					<YouTube 
+						videoId={ queuedTracks[playingTrackIndex].youtubeId } 
+						opts={{ height: '390', width: '640', playerVars: { autoplay: 1 } }} 
+						className={`absolute right-0 bottom-20 ${ (player.showYtIframe) ? '' : 'hidden' }`}
+						onReady={ onPlayerReady }
+						onStateChange={ onPlayerStateChange }
+						onEnd={ onSongEnd }
+					/>
+
 				</div>
-			}
-			
-			{
-				playingTrackIndex !== -1 &&
-				<YouTube 
-					videoId={ queuedTracks[playingTrackIndex].youtubeId } 
-					opts={{ height: '390', width: '640', playerVars: { autoplay: 1 } }} 
-					className={`absolute right-0 bottom-20 ${ (player.showYtIframe) ? '' : 'hidden' }`}
-					onReady={ onPlayerReady }
-					onStateChange={ onPlayerStateChange }
-					onEnd={ onSongEnd }
-				/>
-			}
-    </div>
+			</div>
+		</div>
   );
 };
 
