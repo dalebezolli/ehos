@@ -3,6 +3,7 @@ import { useUser } from '../context/UserContext';
 import { getTracksFromCollection, getUserTags } from '../utils/firebase';
 import TrackList from '../components/TrackList';
 import { usePopup } from './PageLayout';
+import { FaSearch } from 'react-icons/fa';
 
 
 const Home = _ => {
@@ -75,43 +76,66 @@ const Home = _ => {
 		setSavedSongs((prevSavedSong) => prevSavedSong.filter((currTrack) => currTrack.youtubeId !== track.youtubeId));
 	};
 
+	if(!user) return null;
+
 	return (
-		<div className='flex flex-col px-16 container'>
-			<h1 className='text-3xl font-bold mb-3'>Welcome to Ehos{ user && `, ${ user.displayName }` } </h1>
-					
-			{
-				!user ?
-					<p>Search to get started 🎶</p> : (
-						<div>
-							<p className='mb-8'>Saved Songs</p>
+		<div className='flex flex-col px-16 container mx-auto'>
 
-							<div>
-								<input type='text' id='filter' className='text-dark' ref={ filterRef } />
-								<button 
-									className='px-2 bg-light-secondary text-dark'
-									onClick={ () => {
-										if(!filterRef.current.value) {
-											setFilteredSongs(savedSongs);
-											return;
-										}
+			<div>
+				<div className='flex justify-between items-center'>
+					<p className='text-2xl'>Saved Tracks</p>
 
-										filterSavedSongs(filterRef.current.value);
-									}
-								}
-								>Filter</button>
-							</div>
+					<form className='
+						flex p-2 bg-dark-secondary 
+					focus-within:bg-input-focus rounded-3xl 
+						transition-all
+						w-[200px] focus-within:w-[350px]'
+						onSubmit={ (event) => {
+							event.preventDefault();
+							if(!filterRef.current.value) {
+								setFilteredSongs(savedSongs);
+								return;
+							}
 
-							<TrackList 
-								tracks={ filteredSongs } 
-								enabledControls={{ save: true, queue: true, delete: true }} 
-								controlHandlers={{ 
-									onSave: handleUpdateCollectionTrack,
-									onDelete: handleDeleteCollectionTrack 
-								}} 
-							/>
-						</div>
-					)
-			}
+							filterSavedSongs(filterRef.current.value);
+						}}
+					>
+						<button 
+							type='submit'
+        			className='
+								pl-2 pr-4 
+								text-light-secondary hover:text-light transition-colors' 
+						>
+							<FaSearch className='w-3' />
+						</button>
+						<input 
+							type='text' 
+							id='filter' 
+							placeholder='Filter tracks'
+							className='
+								bg-inherit 
+								text-sm
+								text-light placeholder-light-secondary 
+								outline-none
+								transition-all w-full' 
+							ref={ filterRef } 
+						/>
+					</form>
+				</div>
+
+				<div className='w-full h-[2px] my-3 bg-[#FFFFFF10]'></div>
+			</div>
+
+
+			<TrackList 
+				tracks={ filteredSongs } 
+				enabledControls={{ save: true, queue: true, delete: true }} 
+				controlHandlers={{ 
+					onSave: handleUpdateCollectionTrack,
+					onDelete: handleDeleteCollectionTrack 
+				}} 
+			/>
+			
 		</div>
 	);
 };
