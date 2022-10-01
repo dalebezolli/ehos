@@ -4,9 +4,6 @@ import { usePlayer } from '../context/ContentViewerContext';
 
 import ContentPlayer from '../components/ContentPlayer';
 import NavBar from '../components/NavBar';
-import SideNav from '../components/SideNav';
-import Changelog from '../components/Changelog';
-
 
 const PageSetup = ({children}) => {
 	return (
@@ -19,19 +16,6 @@ const PageSetup = ({children}) => {
 const PageLayout = _ => {
 	const { queue } = usePlayer();
 	const { playingTrackIndex } = queue;
-
-	const { insertPopup, removePopup } = usePopup();
-	const changelogPopupRef = useRef();
-
-	useEffect(() => {
-		if(changelogPopupRef.current)	return;
-
-		changelogPopupRef.current = insertPopup(
-			<Changelog onCancel={ () => { 
-				removePopup(changelogPopupRef.current) 
-			} } /> 
-		);
-	}, []);
 
 	return (
 			<div>

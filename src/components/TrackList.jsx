@@ -40,6 +40,7 @@ const TrackListing = ({ track, position, enabledControls, controlHandlers }) => 
 	
 	const handleSaveTrack = (event, track, onSave) => {
 		event.stopPropagation();
+		console.log('saving track...');
 		trackPopupRef.current = insertPopup(<TrackPopup track={ track } onSave={ onSave } onCancel={ () => { removePopup(trackPopupRef.current) } } />, true);
 	};
 
