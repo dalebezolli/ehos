@@ -77,19 +77,21 @@ const Search = _ => {
 		}
 	}, [loaderRef, resultList]);
 
+	if(error) {
+		return (
+			<p>Oops, an error occured!</p>
+		);
+	}
+
 	return (
-		<div className='px-16 container'>
-			{
-				!error ?
-					<>
-						<div id='filters' className='my-6'>
-							<p>Filters</p>
-						</div>
-						<TrackList tracks={ resultList } />
-						<div id='loader' ref={ loaderRef }>loading...</div>
-					</> :
-					<p>Oops, an error occured!</p>
-			}
+		<div className='px-16 container mx-auto'>
+			<div>
+				<p className='text-2xl'>Results</p>
+				<div className='w-full h-[2px] my-3 bg-[#FFFFFF10]'></div>
+			</div>
+
+			<TrackList tracks={ resultList } />
+			<div id='loader' ref={ loaderRef }>loading...</div>
 		</div>
 	);
 };
