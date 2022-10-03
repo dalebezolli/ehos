@@ -24,7 +24,7 @@ const NavBar = _ => {
 
 					<div className='mr-4 sm:mr-2 relative' >
 						{
-							user? 
+							user && ( 
 								<div 
 									className='cursor-pointer'
 									onClick={ (event) => { if(event.target.tagName === 'IMG')
@@ -33,8 +33,7 @@ const NavBar = _ => {
 								>
 									<UserIcon user={ user } />
 								</div>
-								 :
-								<Link to='/login'>Login</Link>
+							)
 						}
 						{
 							(showUserOptions && user) && (

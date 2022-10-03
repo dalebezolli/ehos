@@ -2,15 +2,25 @@ import { useState, useEffect, useRef } from 'react';
 import { useUser } from '../context/UserContext';
 import { getTracksFromCollection, getUserTags } from '../utils/firebase';
 import TrackList from '../components/TrackList';
-import { usePopup } from './PageLayout';
 import { FaSearch } from 'react-icons/fa';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 
 const Home = _ => {
-	const { user } = useUser();
+	const { user, signin } = useUser();
 	const [ savedSongs, setSavedSongs ] = useState([]);
 	const filterRef = useRef();
 	let [ filteredSongs, setFilteredSongs ] = useState(savedSongs);
+
+	const navigate = useNavigate();
+	const location = useLocation();
+
+	let from = location.state ? location.state.from : null;
+	let path = from ? from.pathname + from.search : '/';
+
+	const handleLogin = (event) => {
+		signin(() => { navigate(path, { replace: true }) });
+	}
 
 	useEffect(() => {
 		setFilteredSongs(savedSongs);
@@ -28,7 +38,7 @@ const Home = _ => {
 		}
 
 		getUserSavedSongs();
-	}, []);
+	}, [user]);
 
 	const filterSavedSongs = async (filter) => {
 		let treeSearch = true;	
@@ -76,7 +86,17 @@ const Home = _ => {
 		setSavedSongs((prevSavedSong) => prevSavedSong.filter((currTrack) => currTrack.youtubeId !== track.youtubeId));
 	};
 
-	if(!user) return null;
+	if(!user) return (
+		<div className='container mx-auto flex flex-col items-center'>
+			<h2 className='text-3xl mt-24 mb-20'>Welcome to EHOS</h2>
+			<button 
+				className='bg-primary rounded-sm px-8 py-2' 
+				onClick={ handleLogin }
+			>
+					Login with google
+			</button>
+		</div>
+	);
 
 	return (
 		<div className='flex flex-col px-16 container mx-auto'>
