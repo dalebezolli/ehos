@@ -27,10 +27,11 @@ const TrackList = ({ tracks, enabledControls = { save: true, queue: true }, cont
 };
 
 const TrackListing = ({ track, position, enabledControls, controlHandlers }) => {
-	const { playTrack, queueTrack } = usePlayer();
+	const { playTrack, queueTrack, queue } = usePlayer();
 	const { user } = useUser();
 	const { insertPopup, removePopup } = usePopup();
 	const trackPopupRef = useRef();
+	const selected = (track.youtubeId === queue?.queuedTracks[queue?.playingTrackIndex]?.youtubeId);
 
 	const [ showTrackOptions, setShowTrackOptions ] = useState(false);
 
@@ -59,23 +60,39 @@ const TrackListing = ({ track, position, enabledControls, controlHandlers }) => 
 
 	return (
 		<div 
-			className='
+			className={`
 				group
 				flex py-1.5 text-sm
 				text-light-secondary
 				hover:bg-[rgba(36,36,38,0.6)] rounded-lg
 				cursor-pointer
-			'
+				${ selected && 'bg-dark-secondary' }
+			`}
 			onClick={ () => handleSelectTrack(track) }
 			onMouseLeave={ () => { setShowTrackOptions(false) } }
 		>
 			<div className='flex justify-center items-center w-[32px] h-[42px]'>
-				<p>{ position }</p>
+				{
+					selected ? 
+					<div className='
+						w-0 h-0 
+						border-t-[5px] border-t-transparent
+						border-l-[10px] border-l-light
+						border-b-[5px] border-b-transparent'
+					></div>:
+					<p>{ position }</p>
+				}
 			</div>
 
 			<div 
-				className='w-[42px] h-[42px] bg-[length:180%] bg-center bg-no-repeat rounded-lg'
-				style={{ backgroundImage: `url(${ track.thumbnail })` }} 
+				className='
+					w-[42px] h-[42px] 
+					bg-[length:180%] bg-center bg-no-repeat rounded-lg'
+				style={{ 
+					backgroundImage: `${
+						selected ? 'linear-gradient(to top right, #0F031Ee0, #0F031E60), ' : '' 
+						}url(${ track.thumbnail })` 
+				}} 
 			></div>
 
 			<div className='px-5 w-[65%]'>
